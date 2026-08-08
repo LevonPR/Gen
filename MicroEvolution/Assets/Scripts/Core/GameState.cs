@@ -13,12 +13,23 @@ namespace MicroEvolution.Core
         public int Population { get; private set; } = GameConfig.StartingPopulation;
         public float Health { get; private set; } = GameConfig.PlayerMaxHealth;
         public float MaxHealth { get; private set; } = GameConfig.PlayerMaxHealth;
+        public int CurrentBiomeIndex { get; private set; }
+        public int PredatorsKilled { get; private set; }
+        public int FoodEaten { get; private set; }
+
         public bool HasOscillator { get; private set; }
         public bool HasSpikes { get; private set; }
         public bool HasMembrane { get; private set; }
         public bool HasChemosynthesisUpgrade { get; private set; }
+        public bool HasFlagella { get; private set; }
+        public bool HasEyes { get; private set; }
+        public bool HasJaws { get; private set; }
+        public bool HasToxin { get; private set; }
+        public bool HasStorage { get; private set; }
+
         public bool PopulationGoalMet { get; private set; }
         public bool OscillatorGoalMet { get; private set; }
+        public bool BiomeGoalMet { get; private set; }
         public bool Victory { get; private set; }
         public bool PlayerDead { get; private set; }
 
@@ -33,6 +44,52 @@ namespace MicroEvolution.Core
             }
 
             Instance = this;
+            ApplyMetaBonuses();
+        }
+
+        void ApplyMetaBonuses()
+        {
+            var meta = SaveSystem.LoadMeta();
+            if (meta.unlockedBiomeIndex >= 1)
+                EvolutionPoints += 4;
+            if (meta.bestPopulation >= 100)
+                AtpMax += 15f;
+            Atp = AtpMax;
+        }
+
+        public void ResetRun()
+        {
+            AtpMax = GameConfig.AtpMaxBase;
+            ApplyMetaBonuses();
+            Atp = AtpMax;
+            Biomass = 0f;
+            EvolutionPoints = GameConfig.StartingEvolutionPoints + (SaveSystem.LoadMeta().unlockedBiomeIndex >= 1 ? 4 : 0);
+            Population = GameConfig.StartingPopulation;
+            MaxHealth = GameConfig.PlayerMaxHealth;
+            Health = MaxHealth;
+            CurrentBiomeIndex = 0;
+            PredatorsKilled = 0;
+            FoodEaten = 0;
+            HasOscillator = HasSpikes = HasMembrane = HasChemosynthesisUpgrade = false;
+            HasFlagella = HasEyes = HasJaws = HasToxin = HasStorage = false;
+            PopulationGoalMet = OscillatorGoalMet = BiomeGoalMet = Victory = PlayerDead = false;
+            GameEvents.RaiseStateChanged();
+            GameEvents.RaiseObjectivesChanged();
+        }
+
+        public void SetBiomeIndex(int index)
+        {
+            if (index == CurrentBiomeIndex) return;
+            CurrentBiomeIndex = index;
+            if (!BiomeGoalMet && index >= 2)
+            {
+                BiomeGoalMet = true;
+                GameEvents.RaiseToast("Objective: reached Thermal Vent biome");
+                GameEvents.RaiseObjectivesChanged();
+                CheckVictory();
+            }
+
+            GameEvents.RaiseStateChanged();
         }
 
         public void SetAtpMax(float value)
@@ -59,7 +116,7 @@ namespace MicroEvolution.Core
         public void AddBiomass(float amount)
         {
             Biomass += amount;
-            // Biomass slowly fuels population growth.
+            FoodEaten++;
             var bonus = Mathf.FloorToInt(amount / 40f);
             if (bonus > 0) AddPopulation(bonus);
             GameEvents.RaiseStateChanged();
@@ -90,7 +147,11 @@ namespace MicroEvolution.Core
                 CheckVictory();
             }
 
+            if (Population <= 0)
+                GameFlow.Instance?.AnnounceGameOver();
+
             GameEvents.RaiseStateChanged();
+            SaveSystem.SaveMeta(GameFlow.Instance, this);
         }
 
         public void SetHealth(float value)
@@ -99,7 +160,8 @@ namespace MicroEvolution.Core
             if (Health <= 0f && !PlayerDead)
             {
                 PlayerDead = true;
-                GameEvents.RaiseToast("Your cell ruptured. Press R to respawn.");
+                AddPopulation(-8);
+                GameEvents.RaiseToast("Your cell ruptured. Respawn from colony.");
             }
 
             GameEvents.RaiseStateChanged();
@@ -109,7 +171,9 @@ namespace MicroEvolution.Core
         {
             if (PlayerDead) return;
             var mitigated = HasMembrane ? amount * (1f - GameConfig.MembraneArmorBonus) : amount;
+            if (HasStorage) mitigated *= 0.92f;
             SetHealth(Health - mitigated);
+            GameEvents.RaisePlayerHurt(mitigated);
         }
 
         public void Heal(float amount)
@@ -118,45 +182,89 @@ namespace MicroEvolution.Core
             SetHealth(Health + amount);
         }
 
+        public void RegisterPredatorKill()
+        {
+            PredatorsKilled++;
+            AddPopulation(3);
+        }
+
         public void UnlockOscillator()
         {
             if (HasOscillator) return;
             HasOscillator = true;
             OscillatorGoalMet = true;
-            GameEvents.RaiseToast("Evolved Oscillator — swimming efficiency up");
+            GameEvents.RaiseToast("Evolved Oscillator");
             GameEvents.RaiseObjectivesChanged();
             CheckVictory();
-            GameEvents.RaiseStateChanged();
+            AfterUnlock();
         }
 
-        public void UnlockSpikes()
-        {
-            HasSpikes = true;
-            GameEvents.RaiseToast("Evolved Spikes — melee damage up");
-            GameEvents.RaiseStateChanged();
-        }
-
-        public void UnlockMembrane()
-        {
-            HasMembrane = true;
-            GameEvents.RaiseToast("Evolved Thick Membrane — damage taken down");
-            GameEvents.RaiseStateChanged();
-        }
+        public void UnlockSpikes() { if (HasSpikes) return; HasSpikes = true; GameEvents.RaiseToast("Evolved Spikes"); AfterUnlock(); }
+        public void UnlockMembrane() { if (HasMembrane) return; HasMembrane = true; GameEvents.RaiseToast("Evolved Thick Membrane"); AfterUnlock(); }
 
         public void UnlockChemosynthesis()
         {
+            if (HasChemosynthesisUpgrade) return;
             HasChemosynthesisUpgrade = true;
             SetAtpMax(AtpMax + 30f);
-            GameEvents.RaiseToast("Evolved Chemosynthesis — ATP capacity up");
+            GameEvents.RaiseToast("Evolved Chemosynthesis");
+            AfterUnlock();
+        }
+
+        public void UnlockFlagella()
+        {
+            if (HasFlagella) return;
+            HasFlagella = true;
+            GameEvents.RaiseToast("Evolved Flagella — turn & cruise speed up");
+            AfterUnlock();
+        }
+
+        public void UnlockEyes()
+        {
+            if (HasEyes) return;
+            HasEyes = true;
+            GameEvents.RaiseToast("Evolved Eyes — vent darkness cleared");
+            AfterUnlock();
+        }
+
+        public void UnlockJaws()
+        {
+            if (HasJaws) return;
+            HasJaws = true;
+            GameEvents.RaiseToast("Evolved Jaws — bonus biomass from kills");
+            AfterUnlock();
+        }
+
+        public void UnlockToxin()
+        {
+            if (HasToxin) return;
+            HasToxin = true;
+            GameEvents.RaiseToast("Evolved Toxin Glands — damage over time");
+            AfterUnlock();
+        }
+
+        public void UnlockStorage()
+        {
+            if (HasStorage) return;
+            HasStorage = true;
+            SetAtpMax(AtpMax + 20f);
+            GameEvents.RaiseToast("Evolved Vacuole Storage — ATP capacity up");
+            AfterUnlock();
+        }
+
+        void AfterUnlock()
+        {
             GameEvents.RaiseStateChanged();
+            SaveSystem.SaveMeta(GameFlow.Instance, this);
+            GameEvents.RaiseEvolve();
         }
 
         public void RespawnPlayer()
         {
+            if (Population <= 0) return;
             PlayerDead = false;
             SetHealth(MaxHealth * 0.7f);
             Atp = AtpMax * 0.6f;
-            Population = Mathf.Max(10, Population - 8);
             GameEvents.RaiseToast("Colony reformed a new cell");
             GameEvents.RaiseStateChanged();
         }
@@ -164,10 +272,12 @@ namespace MicroEvolution.Core
         void CheckVictory()
         {
             if (Victory) return;
-            if (PopulationGoalMet && OscillatorGoalMet)
+            // Full victory: population + oscillator + reached deepest biome
+            if (PopulationGoalMet && OscillatorGoalMet && BiomeGoalMet)
             {
                 Victory = true;
-                GameEvents.RaiseToast("Evolution milestone reached — Cell Stage complete!");
+                GameEvents.RaiseToast("Cell Stage complete!");
+                GameFlow.Instance?.AnnounceVictory();
             }
         }
     }

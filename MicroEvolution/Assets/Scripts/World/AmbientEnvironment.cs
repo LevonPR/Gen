@@ -18,7 +18,7 @@ namespace MicroEvolution.World
             var floorSr = floor.AddComponent<SpriteRenderer>();
             floorSr.sprite = ProceduralSprites.Circle("floor", new Color(0.05f, 0.18f, 0.28f, 0.55f), 128);
             floorSr.sortingOrder = -20;
-            floor.transform.localScale = Vector3.one * (GameConfig.WorldRadius * 2.1f);
+            floor.transform.localScale = Vector3.one * (GameConfig.WorldRadius * 2.15f);
 
             var rim = new GameObject("WorldRim");
             rim.transform.SetParent(root.transform, false);

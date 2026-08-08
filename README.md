@@ -1,9 +1,22 @@
 # Gen
 
-Spore-inspired microorganism evolution prototype.
+Spore-inspired microorganism evolution game (**MicroEvolution**).
 
-## Project
+## Unity project
 
-Open the Unity project in [`MicroEvolution/`](MicroEvolution/README.md).
+[`MicroEvolution/`](MicroEvolution/README.md) — open in **Unity 2022.3 LTS**.
 
-Requires **Unity 2022.3 LTS**. Open that folder in Unity Hub and press Play.
+Phased plan: [`MicroEvolution/Docs/DEVELOPMENT_PLAN.md`](MicroEvolution/Docs/DEVELOPMENT_PLAN.md)
+
+### Android APK
+
+With Unity + Android Build Support installed:
+
+```bash
+cd MicroEvolution
+# Menu: MicroEvolution → Build Android APK
+# or:
+UNITY_EDITOR=/path/to/Unity ./Scripts/build-android-apk.sh
+```
+
+Output: `MicroEvolution/Builds/Android/MicroEvolution.apk`

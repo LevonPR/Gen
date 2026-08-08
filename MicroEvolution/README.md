@@ -1,65 +1,79 @@
 # MicroEvolution
 
-A Spore-inspired **Cell Stage** prototype built for **Unity 2022.3 LTS**.
+Spore-inspired **Cell Stage** game for **Unity 2022.3 LTS**, built to ship as an **Android APK**.
 
-Swim as a microorganism, eat biomass, manage ATP, grow your population, and spend evolution points on new parts.
+## Quick start (Editor)
 
-## Open & play
-
-1. Install [Unity Hub](https://unity.com/download) and **Unity 2022.3 LTS** (other 2022.3.x versions are fine).
-2. In Unity Hub: **Open →** select this `MicroEvolution` folder.
-3. Open `Assets/Scenes/Main.unity` (or any scene).
-4. Press **Play**.
-
-The game auto-boots via `AutoBootstrap` — you do not need to place objects in the scene.
+1. Install Unity Hub + **Unity 2022.3.52f1** (Android Build Support + OpenJDK + SDK/NDK).
+2. Open this `MicroEvolution` folder in Unity Hub.
+3. Open `Assets/Scenes/Main.unity` → **Play**.
+4. Main menu → **START RUN**.
 
 ## Controls
 
-| Input | Action |
-| --- | --- |
-| **WASD** / Arrows | Swim |
-| **Right Mouse** (hold) | Swim toward cursor |
-| **Q** | Speed boost (costs ATP) |
-| **E** | Chemosynthesis (restore ATP + heal) |
-| **1** | Evolve Oscillator (12 evo) — objective part |
-| **2** | Evolve Spikes (10 evo) |
-| **3** | Evolve Membrane (10 evo) |
-| **4** | Evolve Chemosynthesis (14 evo) |
-| **R** | Respawn after death |
+| Desktop | Android / touch | Action |
+| --- | --- | --- |
+| WASD / Arrows | Left virtual stick | Swim |
+| Right Mouse | Stick direction | Steer |
+| Q | Q button | Speed boost (ATP) |
+| E | E button | Chemosynthesis |
+| Tab | EVO | Evolution shop |
+| 1–9 | Shop buttons | Buy parts |
+| P / Esc | II | Pause |
+| R | E (when dead) | Respawn |
 
-## Objectives
+## Objectives (win the Cell Stage)
 
-1. Reach **population 150**
-2. Evolve the **Oscillator**
+1. Reach population **150**
+2. Evolve **Oscillator**
+3. Reach the **Thermal Vent** biome (swim outward)
 
-Complete both to finish the Cell Stage milestone.
+## Features by phase
 
-## Gameplay systems
+See [`Docs/DEVELOPMENT_PLAN.md`](Docs/DEVELOPMENT_PLAN.md).
 
-- **ATP** — energy for movement/boost; regenerates over time
-- **Biomass** — gained from food and prey; feeds population growth
-- **Evolution points** — spent on parts in the HUD or with keys 1–4
-- **Population** — grows from allies, feeding, and evolutions; shrinks under predator pressure
-- **Ecology** — food pellets, prey, colony allies, and spiky predators with simple AI
-- **Minimap / HUD** — ATP, evo points, objectives, health, abilities
+- Main menu, pause, victory / game-over
+- Save meta progress (best population, biome access, settings)
+- 9 evolution parts, 3 biomes, species variants
+- Procedural audio + VFX, tutorial coach marks
+- Touch controls + mobile entity caps
+- Android build menu + CLI script
+
+## Build Android APK
+
+### Option A — Unity menu
+
+1. `MicroEvolution → Configure Android Player Settings`
+2. `MicroEvolution → Build Android APK`
+3. Output: `Builds/Android/MicroEvolution.apk`
+
+### Option B — CLI
+
+```bash
+# Install Unity 2022.3.52f1 with Android modules first
+UNITY_EDITOR=/path/to/Editor/Unity ./Scripts/build-android-apk.sh
+```
+
+### Player settings (auto-applied by build script)
+
+- Package: `com.gen.microevolution`
+- Min SDK 24 / Target SDK 34
+- ARM64 + IL2CPP
+- Landscape
+
+Install on device:
+
+```bash
+adb install -r Builds/Android/MicroEvolution.apk
+```
 
 ## Project layout
 
 ```
 Assets/Scripts/
-  Core/         Game state, bootstrap, motor, living cells
-  Player/       Player controller
-  AI/           Prey / predator / ally behavior
-  World/        Spawning, food, camera, ambience
-  Evolution/    Part unlock shop
-  UI/           Runtime HUD
-  Visuals/      Procedural cell sprites
+  Core/ Input/ Player/ AI/ World/ Evolution/
+  UI/ Audio/ Visuals/ Mobile/
+Assets/Editor/AndroidBuilder.cs
+Scripts/build-android-apk.sh
+Docs/DEVELOPMENT_PLAN.md
 ```
-
-All art is **procedural** (no external sprite pack required).
-
-## Notes
-
-- Target editor: Unity **2022.3.52f1** (any 2022.3 LTS should import cleanly).
-- 2D physics, orthographic camera, runtime world generation.
-- This is an MVP slice of Spore’s cell stage — not the full multi-stage Spore pipeline.

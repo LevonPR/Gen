@@ -1,4 +1,5 @@
 using System;
+using MicroEvolution.Visuals;
 using UnityEngine;
 
 namespace MicroEvolution.Core
@@ -19,6 +20,8 @@ namespace MicroEvolution.Core
 
         CircleCollider2D _col;
         float _contactCooldown;
+        SpriteRenderer _flashTarget;
+        float _flash;
 
         void OnEnable() => CellRegistry.Register(this);
         void OnDisable() => CellRegistry.Unregister(this);
@@ -45,12 +48,26 @@ namespace MicroEvolution.Core
         {
             if (_contactCooldown > 0f) _contactCooldown -= Time.deltaTime;
 
-            // Keep player inside world soft boundary.
             var pos = transform.position;
             var dist = pos.magnitude;
             if (dist > GameConfig.WorldRadius)
-            {
                 transform.position = pos.normalized * GameConfig.WorldRadius;
+
+            if (_flash > 0f)
+            {
+                _flash -= Time.deltaTime * 5f;
+                if (_flashTarget == null)
+                {
+                    var body = transform.Find("Body");
+                    if (body != null) _flashTarget = body.GetComponent<SpriteRenderer>();
+                }
+
+                if (_flashTarget != null)
+                {
+                    var baseColor = _flashTarget.color;
+                    baseColor.a = 0.72f;
+                    _flashTarget.color = Color.Lerp(baseColor, Color.white, Mathf.Clamp01(_flash));
+                }
             }
         }
 
@@ -58,6 +75,7 @@ namespace MicroEvolution.Core
         {
             if (Health <= 0f) return;
             Health -= amount;
+            _flash = 1f;
             if (Health <= 0f)
             {
                 Health = 0f;
@@ -69,13 +87,26 @@ namespace MicroEvolution.Core
         {
             if (source != null && source.IsPlayer && GameState.Instance != null)
             {
-                GameState.Instance.AddBiomass(BiomassValue);
+                var biomass = BiomassValue;
+                if (GameState.Instance.HasJaws) biomass *= GameConfig.JawsBiomassBonus;
+                GameState.Instance.AddBiomass(biomass);
                 GameState.Instance.AddEvolutionPoints(EvolutionReward);
                 if (Faction == Faction.Predator)
-                    GameState.Instance.AddPopulation(3);
+                {
+                    GameState.Instance.RegisterPredatorKill();
+                    GameEvents.RaiseKillPulse();
+                    FloatingText.Spawn(transform.position, "Predator down", new Color(1f, 0.5f, 0.4f));
+                }
                 else if (Faction == Faction.Prey)
+                {
                     GameState.Instance.AddPopulation(1);
+                    FloatingText.Spawn(transform.position, $"+{biomass:0}", new Color(1f, 0.9f, 0.4f));
+                }
             }
+
+            VfxBurst.Spawn(transform.position,
+                Faction == Faction.Predator ? new Color(1f, 0.3f, 0.25f, 0.85f) : new Color(0.6f, 0.9f, 1f, 0.8f),
+                Radius * 1.8f);
 
             Died?.Invoke(this);
             Destroy(gameObject);
@@ -101,6 +132,7 @@ namespace MicroEvolution.Core
             if (IsPlayer && GameState.Instance != null)
             {
                 GameState.Instance.Damage(damage);
+                CameraImpulse.Instance?.Punch(0.18f);
                 return;
             }
 

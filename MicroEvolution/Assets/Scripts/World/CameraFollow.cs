@@ -24,15 +24,6 @@ namespace MicroEvolution.World
 
             var desired = new Vector3(Target.position.x, Target.position.y, -10f);
             transform.position = Vector3.SmoothDamp(transform.position, desired, ref _velocity, 1f / Smooth);
-
-            // Subtle look-ahead based on mouse.
-            if (Camera.main != null && Input.mousePresent)
-            {
-                var mouse = Input.mousePosition;
-                var nx = (mouse.x / Screen.width - 0.5f) * 1.5f;
-                var ny = (mouse.y / Screen.height - 0.5f) * 1.5f;
-                transform.position += new Vector3(nx, ny, 0f) * 0.02f;
-            }
         }
     }
 }
