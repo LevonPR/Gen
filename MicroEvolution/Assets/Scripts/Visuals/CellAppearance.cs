@@ -133,14 +133,14 @@ namespace MicroEvolution.Visuals
 
             if (_sphereMesh == null) _sphereMesh = MeshFactory.UnitSphere(36, 22, 0.05f);
             if (_capsuleMesh == null) _capsuleMesh = MeshFactory.Capsule(26, 16);
-            var spiky = MeshFactory.SpikySphere(30, 18, 11);
+            if (_spikyMesh == null) _spikyMesh = MeshFactory.SpikySphere(30, 18, 11);
 
             var bodyGo = new GameObject("MeshBody");
             bodyGo.transform.SetParent(transform, false);
             _meshFilter = bodyGo.AddComponent<MeshFilter>();
             _meshBody = bodyGo.AddComponent<MeshRenderer>();
             _meshFilter.sharedMesh = style == MicrobeStyle.RodBacteria ? _capsuleMesh
-                : style == MicrobeStyle.SpikyOrb ? spiky
+                : style == MicrobeStyle.SpikyOrb ? _spikyMesh
                 : _sphereMesh;
             _cellMat = new Material(_softShader);
             _cellMat.SetColor("_Color", bodyColor);
