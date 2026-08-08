@@ -8,6 +8,8 @@ Spore-inspired microorganism evolution game (**MicroEvolution**).
 
 Phased plan: [`MicroEvolution/Docs/DEVELOPMENT_PLAN.md`](MicroEvolution/Docs/DEVELOPMENT_PLAN.md)
 
+**What’s missing:** [`MicroEvolution/Docs/WHAT_IS_MISSING.md`](MicroEvolution/Docs/WHAT_IS_MISSING.md)
+
 ### Android APK
 
 With Unity + Android Build Support installed:

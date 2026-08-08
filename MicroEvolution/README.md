@@ -32,6 +32,10 @@ Designed to match cinematic mobile Cell Stage concepts: bioluminescent microbes,
 2. Evolve **Oscillator**
 3. Reach the **Thermal Vent** biome (swim outward)
 
+## What’s missing
+
+See [`Docs/WHAT_IS_MISSING.md`](Docs/WHAT_IS_MISSING.md) — APK/store blockers, art gaps, gameplay/content holes, and suggested next slices. Visual score: [`Docs/FIDELITY_SCORE.md`](Docs/FIDELITY_SCORE.md).
+
 ## Features by phase
 
 See [`Docs/DEVELOPMENT_PLAN.md`](Docs/DEVELOPMENT_PLAN.md).
@@ -80,4 +84,6 @@ Assets/Scripts/
 Assets/Editor/AndroidBuilder.cs
 Scripts/build-android-apk.sh
 Docs/DEVELOPMENT_PLAN.md
+Docs/WHAT_IS_MISSING.md
+Docs/FIDELITY_SCORE.md
 ```
