@@ -152,9 +152,13 @@ namespace MicroEvolution.UI
             // Top-left brand + objectives
             var left = UiTheme.MakePanel(root.transform, "LeftPanel", UiTheme.BgPanel);
             UiTheme.SetAnchored(left.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, 1), new Vector2(24, -24), new Vector2(360, 210));
+            // Accent edge
+            var edge = UiTheme.MakePanel(left.transform, "Edge", UiTheme.AccentCyan * new Color(1, 1, 1, 0.35f));
+            UiTheme.SetAnchored(edge.rectTransform, new Vector2(0, 0), new Vector2(0, 1), new Vector2(0, 0.5f), new Vector2(0, 0), new Vector2(3, 0));
+
             _title = UiTheme.MakeText(left.transform, "MicroEvolution", 22, UiTheme.AccentCyan, FontStyle.Bold);
             UiTheme.SetAnchored(_title.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1), new Vector2(0, -10), new Vector2(-24, 28));
-            _region = UiTheme.MakeText(left.transform, "Region: Tide Pool", 14, UiTheme.TextDim);
+            _region = UiTheme.MakeText(left.transform, "Region: Eukaryotic Shoal", 14, UiTheme.TextDim);
             UiTheme.SetAnchored(_region.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(0.5f, 1), new Vector2(0, -38), new Vector2(-24, 22));
             _objectives = UiTheme.MakeText(left.transform, "", 15, UiTheme.TextPrimary);
             _objectives.alignment = TextAnchor.UpperLeft;
@@ -172,9 +176,13 @@ namespace MicroEvolution.UI
             _score = UiTheme.MakeText(top.transform, "SCORE 0", 13, UiTheme.TextDim, FontStyle.Normal, TextAnchor.MiddleRight);
             UiTheme.SetAnchored(_score.rectTransform, new Vector2(0.5f, 0), new Vector2(1, 0), new Vector2(1, 0), new Vector2(-16, 8), new Vector2(160, 20));
 
-            // Minimap
-            _minimap = UiTheme.MakePanel(root.transform, "Minimap", UiTheme.BgPanel);
+            // Circular radar (mockup style)
+            _minimap = UiTheme.MakePanel(root.transform, "Minimap", new Color(0.05f, 0.15f, 0.2f, 0.75f));
+            _minimap.sprite = ProceduralSprites.Circle("radar-bg", Color.white, 128);
             UiTheme.SetAnchored(_minimap.rectTransform, new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-20, -20), new Vector2(150, 150));
+            var radarRing = UiTheme.MakePanel(_minimap.transform, "Ring", UiTheme.AccentCyan * new Color(1, 1, 1, 0.45f));
+            radarRing.sprite = ProceduralSprites.Ring("radar-ring", Color.white, 128, 0.08f);
+            UiTheme.Stretch(radarRing);
             var radarGo = new GameObject("Radar");
             radarGo.transform.SetParent(_minimap.transform, false);
             _minimapDots = radarGo.AddComponent<RawImage>();
@@ -182,6 +190,7 @@ namespace MicroEvolution.UI
             _radarTex.filterMode = FilterMode.Point;
             _minimapDots.texture = _radarTex;
             UiTheme.Stretch(_minimapDots);
+            // Keep radar dots inside circle via mask-ish transparency already in texture clear color
 
             var gear = UiTheme.MakeButton(root.transform, "Pause", UiTheme.HexSlot);
             UiTheme.SetAnchored(gear.GetComponent<RectTransform>(), new Vector2(1, 1), new Vector2(1, 1), new Vector2(1, 1), new Vector2(-185, -28), new Vector2(48, 48));
@@ -206,11 +215,13 @@ namespace MicroEvolution.UI
 
             BuildHexAbilities(vitals.transform);
 
-            // Joystick
-            var stick = UiTheme.MakePanel(root.transform, "Stick", UiTheme.Joystick, true);
+            // Circular virtual joystick
+            var stick = UiTheme.MakePanel(root.transform, "Stick", new Color(0.12f, 0.32f, 0.4f, 0.4f), true);
+            stick.sprite = ProceduralSprites.Circle("stick-bg", Color.white, 128);
             UiTheme.SetAnchored(stick.rectTransform, new Vector2(0, 0), new Vector2(0, 0), new Vector2(0, 0), new Vector2(40, 40), new Vector2(180, 180));
             _stickArea = stick.rectTransform;
-            var knob = UiTheme.MakePanel(stick.transform, "Knob", new Color(0.4f, 0.85f, 1f, 0.55f), true);
+            var knob = UiTheme.MakePanel(stick.transform, "Knob", new Color(0.45f, 0.9f, 1f, 0.7f), true);
+            knob.sprite = ProceduralSprites.Circle("stick-knob", Color.white, 64);
             UiTheme.SetAnchored(knob.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(70, 70));
             _stickKnob = knob.rectTransform;
             var stickHandler = stick.gameObject.AddComponent<StickHandler>();
@@ -219,7 +230,13 @@ namespace MicroEvolution.UI
             // Action cluster bottom-right
             var boost = MakeRoundAction(root.transform, "Boost", "BOOST", new Vector2(-210, 150), () => { }, true, 90);
             var chem = MakeRoundAction(root.transform, "Chem", "CHEM", new Vector2(-120, 210), () => GameInput.Instance?.PressTouchChem(), false, 90);
-            MakeRoundAction(root.transform, "Evolve", "EVO", new Vector2(-90, 70), () => ToggleEvolve(), false, 120);
+            var evo = MakeRoundAction(root.transform, "Evolve", "DNA", new Vector2(-90, 70), () => ToggleEvolve(), false, 128);
+            // Outer DNA ring accent on evolve button
+            var dnaRing = UiTheme.MakePanel(evo.transform, "DnaRing", UiTheme.AccentDna * new Color(1, 1, 1, 0.55f));
+            dnaRing.sprite = ProceduralSprites.Ring("evo-ring", Color.white, 128, 0.1f);
+            dnaRing.raycastTarget = false;
+            UiTheme.Stretch(dnaRing);
+            dnaRing.transform.SetAsFirstSibling();
 
             var boostHold = boost.gameObject.AddComponent<HoldButton>();
             boostHold.OnHold = pressed => GameInput.Instance?.SetTouchBoost(pressed);
@@ -563,9 +580,17 @@ namespace MicroEvolution.UI
         void DrawRadar()
         {
             if (_radarTex == null || GameState.Instance == null) return;
-            var clear = new Color(0.02f, 0.08f, 0.12f, 0.85f);
             var pixels = new Color[128 * 128];
-            for (var i = 0; i < pixels.Length; i++) pixels[i] = clear;
+            for (var y = 0; y < 128; y++)
+            for (var x = 0; x < 128; x++)
+            {
+                var dx = x - 64;
+                var dy = y - 64;
+                var inside = dx * dx + dy * dy <= 60 * 60;
+                pixels[y * 128 + x] = inside
+                    ? new Color(0.02f, 0.08f, 0.12f, 0.55f)
+                    : new Color(0, 0, 0, 0);
+            }
 
             void Plot(Vector3 world, Color c, int r)
             {
@@ -577,6 +602,9 @@ namespace MicroEvolution.UI
                     var px = nx + x;
                     var py = ny + y;
                     if (px < 0 || py < 0 || px >= 128 || py >= 128) continue;
+                    var cx = px - 64;
+                    var cy = py - 64;
+                    if (cx * cx + cy * cy > 60 * 60) continue;
                     if (x * x + y * y <= r * r) pixels[py * 128 + px] = c;
                 }
             }

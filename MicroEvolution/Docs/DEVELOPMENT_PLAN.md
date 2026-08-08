@@ -136,6 +136,8 @@ Match cinematic mobile concept art (Micronus / Evolve Cell Stage style):
 
 Implemented via runtime Canvas HUD (`CinematicHud`) + `UnderwaterAtmosphere` + upgraded `CellAppearance`.
 
+**Fidelity score after latest pass: ~58%** — see [`FIDELITY_SCORE.md`](FIDELITY_SCORE.md).
+
 ## Non-goals (post-APK)
 
 - Full Spore creature/tribal/civilization stages

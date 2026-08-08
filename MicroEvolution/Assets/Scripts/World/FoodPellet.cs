@@ -8,18 +8,15 @@ namespace MicroEvolution.World
     {
         float _spin;
         SpriteRenderer _sr;
+        SpriteRenderer _glow;
 
         public static FoodPellet Spawn(Transform parent, Vector2 position)
         {
             GameObject go;
             if (ObjectPool.Instance != null)
-            {
-                go = ObjectPool.Instance.Get("food", () => CreateNew());
-            }
+                go = ObjectPool.Instance.Get("food", CreateNew);
             else
-            {
                 go = CreateNew();
-            }
 
             go.transform.SetParent(parent, false);
             go.transform.position = position;
@@ -31,9 +28,17 @@ namespace MicroEvolution.World
         static GameObject CreateNew()
         {
             var go = new GameObject("Food");
+            var glow = new GameObject("Glow");
+            glow.transform.SetParent(go.transform, false);
+            var gsr = glow.AddComponent<SpriteRenderer>();
+            gsr.sprite = ProceduralSprites.BloomDisc("food-bloom", new Color(0.5f, 1f, 0.6f, 0.45f), 64);
+            gsr.sortingOrder = 1;
+            glow.transform.localScale = Vector3.one * 1.8f;
+
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = ProceduralSprites.Circle("food", Color.white, 32);
+            sr.sprite = ProceduralSprites.SoftEllipse("food-core", Color.white, 48, 1f, 1f, 0.2f, 0.6f);
             sr.sortingOrder = 2;
+
             var col = go.AddComponent<CircleCollider2D>();
             col.isTrigger = true;
             col.radius = 0.5f;
@@ -41,11 +46,20 @@ namespace MicroEvolution.World
             rb.gravityScale = 0f;
             rb.drag = 1f;
             rb.bodyType = RigidbodyType2D.Kinematic;
-            go.AddComponent<FoodPellet>();
+            var pellet = go.AddComponent<FoodPellet>();
+            pellet._glow = gsr;
             return go;
         }
 
-        void Awake() => _sr = GetComponent<SpriteRenderer>();
+        void Awake()
+        {
+            _sr = GetComponent<SpriteRenderer>();
+            if (_glow == null)
+            {
+                var g = transform.Find("Glow");
+                if (g != null) _glow = g.GetComponent<SpriteRenderer>();
+            }
+        }
 
         void Restyle()
         {
@@ -55,14 +69,18 @@ namespace MicroEvolution.World
             else if (dist >= GameConfig.TidePoolRadius) biome = BiomeId.Midwater;
 
             if (_sr == null) _sr = GetComponent<SpriteRenderer>();
-            _sr.color = BiomeSystem.FoodTint(biome);
-            transform.localScale = Vector3.one * Random.Range(0.25f, 0.4f);
+            var tint = BiomeSystem.FoodTint(biome);
+            _sr.color = tint;
+            if (_glow != null) _glow.color = new Color(tint.r, tint.g, tint.b, 0.4f);
+            transform.localScale = Vector3.one * Random.Range(0.28f, 0.45f);
         }
 
         void Update()
         {
             _spin += Time.deltaTime * 40f;
             transform.rotation = Quaternion.Euler(0f, 0f, _spin);
+            var pulse = 1f + Mathf.Sin(Time.time * 3f + transform.position.x) * 0.08f;
+            if (_glow != null) _glow.transform.localScale = Vector3.one * (1.8f * pulse);
             transform.position += (Vector3)(Random.insideUnitCircle * (0.12f * Time.deltaTime));
         }
 
@@ -84,7 +102,7 @@ namespace MicroEvolution.World
                 if (Random.value < 0.28f)
                     GameState.Instance.AddEvolutionPoints(GameConfig.FoodEvoReward);
                 GameEvents.RaiseAteFood();
-                VfxBurst.Spawn(transform.position, new Color(0.5f, 1f, 0.5f, 0.8f), 0.5f);
+                VfxBurst.Spawn(transform.position, new Color(0.5f, 1f, 0.5f, 0.85f), 0.7f);
                 FloatingText.Spawn(transform.position, $"+{value:0}", new Color(0.6f, 1f, 0.6f));
             }
 

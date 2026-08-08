@@ -91,6 +91,8 @@ namespace MicroEvolution.Core
                 follow.Configure(_player.transform);
                 if (cam.GetComponent<CameraImpulse>() == null)
                     cam.gameObject.AddComponent<CameraImpulse>();
+                if (cam.GetComponent<CameraEffects>() == null)
+                    cam.gameObject.AddComponent<CameraEffects>();
                 cam.orthographicSize = MobileSettings.IsMobileRuntime
                     ? GameConfig.CameraSizeMobile
                     : GameConfig.CameraSize;

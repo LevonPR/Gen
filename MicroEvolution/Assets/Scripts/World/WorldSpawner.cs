@@ -3,6 +3,7 @@ using MicroEvolution.Core;
 using MicroEvolution.Mobile;
 using MicroEvolution.Visuals;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace MicroEvolution.World
 {
@@ -98,6 +99,7 @@ namespace MicroEvolution.World
             float radius, health, damage, speed, biomass, detect;
             int evo;
             Color color;
+            MicrobeStyle style;
 
             var vent = pos.magnitude >= GameConfig.MidwaterRadius;
 
@@ -110,9 +112,10 @@ namespace MicroEvolution.World
                     speed = vent ? 4.8f : 4.2f;
                     biomass = GameConfig.PreyBiomassValue * (vent ? 1.3f : 1f);
                     evo = GameConfig.PreyKillEvoReward;
-                    color = vent
-                        ? new Color(1f, 0.55f, 0.25f, 0.82f)
-                        : Color.Lerp(new Color(0.55f, 0.85f, 1f, 0.78f), new Color(1f, 0.75f, 0.35f, 0.8f), Random.value);
+                    style = Random.value > 0.4f ? MicrobeStyle.RodBacteria : MicrobeStyle.Eukaryote;
+                    color = style == MicrobeStyle.RodBacteria
+                        ? new Color(1f, 0.55f, 0.22f, 0.88f)
+                        : Color.Lerp(new Color(0.55f, 0.85f, 1f, 0.78f), new Color(0.7f, 1f, 0.55f, 0.8f), Random.value);
                     detect = 9f;
                     break;
                 case Faction.Predator:
@@ -122,9 +125,10 @@ namespace MicroEvolution.World
                     speed = vent ? 5.1f : 4.8f;
                     biomass = vent ? 90f : 70f;
                     evo = GameConfig.PredatorKillEvoReward + (vent ? 2 : 0);
-                    color = vent
-                        ? new Color(0.85f, 0.12f, 0.18f, 0.92f)
-                        : new Color(0.55f, 0.15f, 0.65f, 0.9f);
+                    style = Random.value > 0.5f ? MicrobeStyle.SpikyOrb : MicrobeStyle.Segmented;
+                    color = style == MicrobeStyle.SpikyOrb
+                        ? (vent ? new Color(0.35f, 0.85f, 0.4f, 0.92f) : new Color(0.75f, 0.2f, 0.85f, 0.9f))
+                        : (vent ? new Color(0.95f, 0.25f, 0.3f, 0.9f) : new Color(0.85f, 0.45f, 0.35f, 0.88f));
                     detect = 12f;
                     break;
                 default:
@@ -134,13 +138,14 @@ namespace MicroEvolution.World
                     speed = 5f;
                     biomass = 0f;
                     evo = 0;
-                    color = new Color(0.45f, 0.95f, 0.75f, 0.8f);
+                    style = MicrobeStyle.AllyProbe;
+                    color = new Color(0.45f, 0.95f, 0.75f, 0.82f);
                     detect = 10f;
                     break;
             }
 
             cell.Configure(faction, radius, health, damage, biomass, evo);
-            appearance.Build(faction, radius, color);
+            appearance.Build(faction, radius, color, style);
             ai.Init(speed, detect);
             motor.MaxSpeed = speed;
             go.GetComponent<CircleCollider2D>().radius = radius;
