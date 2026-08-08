@@ -358,20 +358,37 @@ namespace MicroEvolution.UI
             UiTheme.SetAnchored(preview.rectTransform, new Vector2(0.5f, 0.55f), new Vector2(0.5f, 0.55f), new Vector2(0.5f, 0.5f), new Vector2(0, 30), new Vector2(200, 200));
             preview.sprite = ProceduralSprites.SoftEllipse("preview-cell", MembraneSwatches[0], 128, 0.9f, 1.05f, 0.16f, 0.55f);
             preview.preserveAspect = true;
-            // Decorative attached-part hints around preview
-            string[] partHints = { "Flagella", "Spikes", "Eyes", "Jaws", "Cilia", "Membrane" };
-            for (var i = 0; i < partHints.Length; i++)
+            // Socket ring — tap to spend DNA / attach part (concept-art customize)
+            var sockets = new (string label, System.Func<bool> buy)[]
             {
-                var ang = i / (float)partHints.Length * Mathf.PI * 2f - Mathf.PI * 0.5f;
-                var chip = UiTheme.MakePanel(card.transform, $"PartChip{i}", UiTheme.HexSlot);
-                UiTheme.SetAnchored(chip.rectTransform, new Vector2(0.5f, 0.55f), new Vector2(0.5f, 0.55f), new Vector2(0.5f, 0.5f),
-                    new Vector2(Mathf.Cos(ang) * 175f, Mathf.Sin(ang) * 130f + 30f), new Vector2(88, 28));
-                var pt = UiTheme.MakeText(chip.transform, partHints[i], 11, UiTheme.TextDim, FontStyle.Bold, TextAnchor.MiddleCenter);
+                ("Flagella", EvolutionShop.TryBuyFlagella),
+                ("Spikes", EvolutionShop.TryBuySpikes),
+                ("Eyes", EvolutionShop.TryBuyEyes),
+                ("Jaws", EvolutionShop.TryBuyJaws),
+                ("Oscillator", EvolutionShop.TryBuyOscillator),
+                ("Membrane", EvolutionShop.TryBuyMembrane),
+            };
+            for (var i = 0; i < sockets.Length; i++)
+            {
+                var socket = sockets[i];
+                var ang = i / (float)sockets.Length * Mathf.PI * 2f - Mathf.PI * 0.5f;
+                var btn = UiTheme.MakeButton(card.transform, $"Socket{i}", UiTheme.HexSlot);
+                UiTheme.SetAnchored(btn.GetComponent<RectTransform>(), new Vector2(0.5f, 0.55f), new Vector2(0.5f, 0.55f), new Vector2(0.5f, 0.5f),
+                    new Vector2(Mathf.Cos(ang) * 175f, Mathf.Sin(ang) * 130f + 30f), new Vector2(96, 32));
+                var pt = UiTheme.MakeText(btn.transform, socket.label, 11, UiTheme.TextPrimary, FontStyle.Bold, TextAnchor.MiddleCenter);
                 UiTheme.Stretch(pt);
+                btn.onClick.AddListener(() =>
+                {
+                    if (socket.buy())
+                    {
+                        _playerLook?.RefreshAttachedParts(GameState.Instance);
+                        AudioDirector.Instance?.PlayUi();
+                    }
+                });
             }
 
-            var partsNote = UiTheme.MakeText(card.transform, "Evolved parts attach live on your cell in-world.", 13, UiTheme.TextDim, FontStyle.Normal, TextAnchor.MiddleCenter);
-            UiTheme.SetAnchored(partsNote.rectTransform, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 165), new Vector2(500, 24));
+            var partsNote = UiTheme.MakeText(card.transform, "Tap sockets to evolve & attach parts · colors tint membrane", 13, UiTheme.TextDim, FontStyle.Normal, TextAnchor.MiddleCenter);
+            UiTheme.SetAnchored(partsNote.rectTransform, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 165), new Vector2(560, 24));
 
             var swatchRow = new GameObject("Swatches");
             swatchRow.transform.SetParent(card.transform, false);

@@ -167,15 +167,22 @@ namespace MicroEvolution.Visuals
         {
             _ciliaRoot = new GameObject("Cilia").transform;
             _ciliaRoot.SetParent(_partsRoot != null ? _partsRoot : transform, false);
-            for (var i = 0; i < 16; i++)
+            var count = 12;
+            for (var i = 0; i < count; i++)
             {
-                var angle = (i / 16f) * Mathf.PI * 2f;
-                var dir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
-                var cilia = CreateSprite($"Cilium{i}", dir * radius * 0.84f, radius * 0.28f,
-                    ProceduralSprites.BloomDisc("cilia", new Color(0.75f, 0.95f, 1f, 0.55f), 24), 3);
-                cilia.transform.SetParent(_ciliaRoot, true);
-                cilia.transform.localScale = new Vector3(radius * 0.07f, radius * 0.48f, 1f);
-                cilia.transform.localRotation = Quaternion.Euler(0f, 0f, angle * Mathf.Rad2Deg);
+                var angle = (i / (float)count) * 360f;
+                var chainGo = new GameObject($"CiliumChain{i}");
+                chainGo.transform.SetParent(_ciliaRoot, false);
+                chainGo.transform.localRotation = Quaternion.Euler(0f, 0f, angle);
+                chainGo.transform.localPosition = Quaternion.Euler(0f, 0f, angle) * Vector3.up * (radius * 0.78f);
+                var chain = chainGo.AddComponent<AppendageChain>();
+                chain.Segments = 4;
+                chain.SegmentLength = radius * 0.16f;
+                chain.WaveSpeed = 7f + i % 3;
+                chain.WaveAmplitude = 14f;
+                chain.Phase = i * 0.4f;
+                chain.Color = new Color(0.75f, 0.95f, 1f, 0.7f);
+                chain.Build();
             }
         }
 
@@ -187,12 +194,17 @@ namespace MicroEvolution.Visuals
             {
                 var fang = new GameObject($"Flagellum{i}");
                 fang.transform.SetParent(_flagellaRoot, false);
-                fang.transform.localRotation = Quaternion.Euler(0f, 0f, 155f + i * 22f);
-                var sr = fang.AddComponent<SpriteRenderer>();
-                sr.sprite = ProceduralSprites.Spike("flagellum", new Color(_membrane.r, _membrane.g, _membrane.b, 0.8f));
-                sr.sortingOrder = 2;
-                fang.transform.localScale = new Vector3(radius * 0.5f, radius * 2.1f, 1f);
-                fang.transform.localPosition = Vector3.down * radius * 0.15f;
+                fang.transform.localRotation = Quaternion.Euler(0f, 0f, 160f + i * 18f);
+                fang.transform.localPosition = Vector3.down * radius * 0.2f;
+                var chain = fang.AddComponent<AppendageChain>();
+                chain.Segments = 6;
+                chain.SegmentLength = radius * 0.28f;
+                chain.WaveSpeed = 9f;
+                chain.WaveAmplitude = 22f;
+                chain.Phase = i * 0.7f;
+                chain.IsFlagellum = true;
+                chain.Color = new Color(_membrane.r, _membrane.g, _membrane.b, 0.85f);
+                chain.Build();
             }
         }
 

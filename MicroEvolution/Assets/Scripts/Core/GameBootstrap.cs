@@ -40,6 +40,8 @@ namespace MicroEvolution.Core
             gameObject.AddComponent<ObjectPool>();
 
             UnderwaterAtmosphere.Create(transform);
+            VolumetricRays.Create(transform);
+            BiomeBackdrops.Create(transform);
             var biome = gameObject.AddComponent<BiomeSystem>();
             biome.BuildVeil(transform);
             gameObject.AddComponent<BiomeAtmosphere>();

@@ -1,3 +1,4 @@
+using MicroEvolution.Visuals;
 using UnityEngine;
 
 namespace MicroEvolution.Core
@@ -167,6 +168,8 @@ namespace MicroEvolution.Core
             Heal(MaxHealth);
             AddAtp(AtpMax * 0.5f);
             AddEvolutionPoints(5);
+            if (PlayerTransform != null)
+                Visuals.MitosisFx.Play(PlayerTransform.position, MembraneColor);
             GameEvents.RaiseToast($"Reproduction successful — Generation {Generation}");
             GameEvents.RaiseStateChanged();
         }

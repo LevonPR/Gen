@@ -54,27 +54,31 @@ namespace MicroEvolution.World
         {
             Color tint;
             float bloom;
+            float distort;
             Color haze;
             switch (biome)
             {
                 case BiomeId.TidePool:
                     tint = new Color(0.9f, 1.02f, 1.05f, 1f);
                     bloom = 0.85f;
+                    distort = 0.002f;
                     haze = new Color(0.25f, 0.7f, 0.55f, 0.05f);
                     break;
                 case BiomeId.Midwater:
                     tint = new Color(0.82f, 0.94f, 1.12f, 1f);
                     bloom = 0.95f;
+                    distort = 0.004f;
                     haze = new Color(0.2f, 0.45f, 0.85f, 0.08f);
                     break;
                 default: // ThermalVent
                     tint = new Color(1.12f, 0.88f, 0.78f, 1f);
                     bloom = 1.15f;
+                    distort = 0.012f;
                     haze = new Color(1f, 0.35f, 0.15f, 0.12f);
                     break;
             }
 
-            _post?.SetBiomeGrade(tint, bloom);
+            _post?.SetBiomeGrade(tint, bloom, distort);
             if (_haze != null) _haze.color = haze;
             if (Camera.main != null)
             {

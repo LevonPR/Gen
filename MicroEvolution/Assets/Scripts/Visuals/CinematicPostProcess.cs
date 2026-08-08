@@ -4,7 +4,7 @@ using UnityEngine;
 namespace MicroEvolution.Visuals
 {
     /// <summary>
-    /// Built-in pipeline bloom + soft edge DoF + color grade via OnRenderImage.
+    /// Built-in pipeline bloom + soft edge DoF + optional heat distort + color grade.
     /// </summary>
     [ExecuteAlways]
     [RequireComponent(typeof(Camera))]
@@ -13,12 +13,15 @@ namespace MicroEvolution.Visuals
         [Range(0f, 2f)] public float BloomIntensity = 0.9f;
         [Range(0f, 1.5f)] public float Threshold = 0.5f;
         [Range(0f, 1f)] public float SoftDoF = 0.4f;
+        [Range(0f, 0.05f)] public float DistortAmount;
         public Color GradeTint = new Color(0.88f, 0.96f, 1.08f, 1f);
 
         Material _mat;
+        Material _distortMat;
         RenderTexture _bright;
         RenderTexture _blurA;
         RenderTexture _blurB;
+        RenderTexture _graded;
 
         void OnEnable()
         {
@@ -26,6 +29,7 @@ namespace MicroEvolution.Visuals
             {
                 BloomIntensity = 0.65f;
                 SoftDoF = 0.25f;
+                DistortAmount = Mathf.Min(DistortAmount, 0.004f);
             }
 
             EnsureMaterial();
@@ -35,9 +39,17 @@ namespace MicroEvolution.Visuals
 
         void EnsureMaterial()
         {
-            if (_mat != null) return;
-            var shader = Shader.Find("Hidden/MicroEvolution/BloomDoF");
-            if (shader != null) _mat = new Material(shader);
+            if (_mat == null)
+            {
+                var shader = Shader.Find("Hidden/MicroEvolution/BloomDoF");
+                if (shader != null) _mat = new Material(shader);
+            }
+
+            if (_distortMat == null)
+            {
+                var d = Shader.Find("Hidden/MicroEvolution/HeatDistort");
+                if (d != null) _distortMat = new Material(d);
+            }
         }
 
         void ReleaseTemps()
@@ -45,7 +57,8 @@ namespace MicroEvolution.Visuals
             if (_bright != null) _bright.Release();
             if (_blurA != null) _blurA.Release();
             if (_blurB != null) _blurB.Release();
-            _bright = _blurA = _blurB = null;
+            if (_graded != null) _graded.Release();
+            _bright = _blurA = _blurB = _graded = null;
         }
 
         void OnRenderImage(RenderTexture src, RenderTexture dest)
@@ -65,6 +78,7 @@ namespace MicroEvolution.Visuals
                 _bright = new RenderTexture(w, h, 0);
                 _blurA = new RenderTexture(w, h, 0);
                 _blurB = new RenderTexture(w, h, 0);
+                _graded = new RenderTexture(src.width, src.height, 0);
             }
 
             _mat.SetFloat("_Threshold", Threshold);
@@ -84,13 +98,25 @@ namespace MicroEvolution.Visuals
             Graphics.Blit(_blurA, _blurB, _mat, 1);
 
             _mat.SetTexture("_BloomTex", _blurB);
-            Graphics.Blit(src, dest, _mat, 2);
+            Graphics.Blit(src, _graded, _mat, 2);
+
+            if (_distortMat != null && DistortAmount > 0.0005f)
+            {
+                _distortMat.SetFloat("_Amount", DistortAmount);
+                _distortMat.SetFloat("_Speed", 1.3f);
+                Graphics.Blit(_graded, dest, _distortMat);
+            }
+            else
+            {
+                Graphics.Blit(_graded, dest);
+            }
         }
 
-        public void SetBiomeGrade(Color tint, float bloom)
+        public void SetBiomeGrade(Color tint, float bloom, float distort = 0f)
         {
             GradeTint = tint;
             BloomIntensity = bloom;
+            DistortAmount = distort;
         }
     }
 }
