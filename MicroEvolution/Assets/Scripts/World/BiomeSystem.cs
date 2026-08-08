@@ -46,10 +46,7 @@ namespace MicroEvolution.World
             else biome = BiomeId.ThermalVent;
 
             if (biome != ActiveBiome)
-            {
                 ActiveBiome = biome;
-                GameEvents.RaiseToast(BiomeName(biome));
-            }
 
             GameState.Instance.SetBiomeIndex((int)biome);
 

@@ -69,10 +69,13 @@ namespace MicroEvolution.Visuals
 
         void OnGUI()
         {
-            if (_vignetteTex == null) return;
             var prev = GUI.color;
-            GUI.color = Color.white;
-            GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), _vignetteTex, ScaleMode.StretchToFill, true);
+            // Vignette is handled by CinematicPostProcess soft-DoF when present.
+            if (GetComponent<CinematicPostProcess>() == null && _vignetteTex != null)
+            {
+                GUI.color = Color.white;
+                GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), _vignetteTex, ScaleMode.StretchToFill, true);
+            }
 
             if (_hurtFlash > 0f)
             {

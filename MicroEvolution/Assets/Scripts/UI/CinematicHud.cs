@@ -355,14 +355,28 @@ namespace MicroEvolution.UI
             UiTheme.SetAnchored(header.rectTransform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -18), new Vector2(400, 36));
 
             var preview = UiTheme.MakePanel(card.transform, "Preview", new Color(0.05f, 0.15f, 0.2f, 0.9f));
-            UiTheme.SetAnchored(preview.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0, 40), new Vector2(220, 220));
-            preview.sprite = ProceduralSprites.Circle("preview-cell", MembraneSwatches[0], 128);
+            UiTheme.SetAnchored(preview.rectTransform, new Vector2(0.5f, 0.55f), new Vector2(0.5f, 0.55f), new Vector2(0.5f, 0.5f), new Vector2(0, 30), new Vector2(200, 200));
+            preview.sprite = ProceduralSprites.SoftEllipse("preview-cell", MembraneSwatches[0], 128, 0.9f, 1.05f, 0.16f, 0.55f);
             preview.preserveAspect = true;
+            // Decorative attached-part hints around preview
+            string[] partHints = { "Flagella", "Spikes", "Eyes", "Jaws", "Cilia", "Membrane" };
+            for (var i = 0; i < partHints.Length; i++)
+            {
+                var ang = i / (float)partHints.Length * Mathf.PI * 2f - Mathf.PI * 0.5f;
+                var chip = UiTheme.MakePanel(card.transform, $"PartChip{i}", UiTheme.HexSlot);
+                UiTheme.SetAnchored(chip.rectTransform, new Vector2(0.5f, 0.55f), new Vector2(0.5f, 0.55f), new Vector2(0.5f, 0.5f),
+                    new Vector2(Mathf.Cos(ang) * 175f, Mathf.Sin(ang) * 130f + 30f), new Vector2(88, 28));
+                var pt = UiTheme.MakeText(chip.transform, partHints[i], 11, UiTheme.TextDim, FontStyle.Bold, TextAnchor.MiddleCenter);
+                UiTheme.Stretch(pt);
+            }
+
+            var partsNote = UiTheme.MakeText(card.transform, "Evolved parts attach live on your cell in-world.", 13, UiTheme.TextDim, FontStyle.Normal, TextAnchor.MiddleCenter);
+            UiTheme.SetAnchored(partsNote.rectTransform, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 165), new Vector2(500, 24));
 
             var swatchRow = new GameObject("Swatches");
             swatchRow.transform.SetParent(card.transform, false);
             var srt = swatchRow.AddComponent<RectTransform>();
-            UiTheme.SetAnchored(srt, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 110), new Vector2(520, 60));
+            UiTheme.SetAnchored(srt, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 100), new Vector2(520, 60));
             var hl = swatchRow.AddComponent<HorizontalLayoutGroup>();
             hl.spacing = 12;
             hl.childAlignment = TextAnchor.MiddleCenter;
@@ -380,14 +394,15 @@ namespace MicroEvolution.UI
                 {
                     GameState.Instance?.SetMembraneColor(color);
                     _playerLook?.SetMembraneColor(color);
+                    _playerLook?.RefreshAttachedParts(GameState.Instance);
                     preview.color = color;
-                    preview.sprite = ProceduralSprites.Circle("preview-cell", color, 128);
+                    preview.sprite = ProceduralSprites.SoftEllipse("preview-cell", color, 128, 0.9f, 1.05f, 0.16f, 0.55f);
                     AudioDirector.Instance?.PlayUi();
                 });
             }
 
             var save = UiTheme.MakeButton(card.transform, "Save", UiTheme.AccentGreen * new Color(0.25f, 0.45f, 0.35f, 1f));
-            UiTheme.SetAnchored(save.GetComponent<RectTransform>(), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 30), new Vector2(200, 48));
+            UiTheme.SetAnchored(save.GetComponent<RectTransform>(), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 28), new Vector2(200, 48));
             var st = UiTheme.MakeText(save.transform, "SAVE", 18, Color.white, FontStyle.Bold, TextAnchor.MiddleCenter);
             UiTheme.Stretch(st);
             save.onClick.AddListener(() => OpenCustomize(false));

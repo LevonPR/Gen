@@ -4,21 +4,25 @@ using UnityEngine;
 namespace MicroEvolution.Visuals
 {
     /// <summary>
-    /// Gelatinous microbe renderer with bloom layers and silhouette styles from concept art.
+    /// Hybrid mesh + sprite microbe: translucent rim-lit mesh body when SoftCell shader exists.
     /// </summary>
     public class CellAppearance : MonoBehaviour
     {
-        SpriteRenderer _body;
+        MeshRenderer _meshBody;
+        MeshFilter _meshFilter;
+        Material _cellMat;
         SpriteRenderer _rim;
         SpriteRenderer _bloom;
         SpriteRenderer _bloom2;
         SpriteRenderer _nucleus;
         SpriteRenderer _organelle;
+        SpriteRenderer _fallbackBody;
         Transform _ciliaRoot;
         Transform _spikesRoot;
         Transform _flagellaRoot;
         Transform _segmentsRoot;
-        Vector3 _bodyBase;
+        Transform _partsRoot;
+        Vector3 _bodyBase = Vector3.one;
         Vector3 _nucleusBase;
         Vector3 _bloomBase;
         float _pulse;
@@ -26,6 +30,11 @@ namespace MicroEvolution.Visuals
         Color _membrane = new Color(0.35f, 0.8f, 1f, 0.7f);
         Faction _faction;
         MicrobeStyle _style;
+        float _radius = 0.85f;
+
+        static Mesh _sphereMesh;
+        static Mesh _capsuleMesh;
+        static Shader _softShader;
 
         public Color MembraneColor => _membrane;
         public MicrobeStyle Style => _style;
@@ -44,59 +53,37 @@ namespace MicroEvolution.Visuals
             _faction = faction;
             _style = style;
             _membrane = bodyColor;
+            _radius = radius;
 
-            // Wide additive bloom (fake HDR glow)
-            _bloom2 = CreateChild("BloomOuter", Vector3.zero, radius * 2.6f,
-                ProceduralSprites.BloomDisc($"bloom2-{style}", new Color(bodyColor.r, bodyColor.g, bodyColor.b, 0.22f), 128), 2);
-            _bloom = CreateChild("Bloom", Vector3.zero, radius * 1.9f,
-                ProceduralSprites.BloomDisc($"bloom-{style}", new Color(bodyColor.r, bodyColor.g, bodyColor.b, 0.35f), 128), 3);
+            _bloom2 = CreateSprite("BloomOuter", Vector3.zero, radius * 2.7f,
+                ProceduralSprites.BloomDisc($"bloom2-{style}", new Color(bodyColor.r, bodyColor.g, bodyColor.b, 0.25f), 128), 2);
+            _bloom = CreateSprite("Bloom", Vector3.zero, radius * 2f,
+                ProceduralSprites.BloomDisc($"bloom-{style}", new Color(bodyColor.r, bodyColor.g, bodyColor.b, 0.38f), 128), 3);
             _bloomBase = _bloom.transform.localScale;
 
-            Sprite bodySprite;
-            Vector3 bodyScale;
-            switch (style)
-            {
-                case MicrobeStyle.SpikyOrb:
-                    bodySprite = ProceduralSprites.SpikyOrb($"spiky-{faction}", bodyColor, 128, 12);
-                    bodyScale = Vector3.one * radius * 1.15f;
-                    break;
-                case MicrobeStyle.RodBacteria:
-                    bodySprite = ProceduralSprites.Capsule($"rod-{faction}", bodyColor, 128);
-                    bodyScale = new Vector3(radius * 0.7f, radius * 1.35f, 1f);
-                    break;
-                case MicrobeStyle.Segmented:
-                    bodySprite = ProceduralSprites.SoftEllipse($"seg-head-{faction}", bodyColor, 128, 0.75f, 1f, 0.15f, 0.5f);
-                    bodyScale = new Vector3(radius * 0.85f, radius * 1.05f, 1f);
-                    break;
-                default:
-                    bodySprite = ProceduralSprites.SoftEllipse($"body-{faction}-{style}", bodyColor, 128, 0.9f, 1.05f, 0.15f, 0.5f);
-                    bodyScale = Vector3.one * radius;
-                    break;
-            }
+            BuildMeshOrSpriteBody(radius, bodyColor, style);
 
-            _rim = CreateChild("Rim", Vector3.zero, radius * 1.12f,
+            _rim = CreateSprite("Rim", Vector3.zero, radius * 1.14f,
                 ProceduralSprites.Ring($"rim-{style}", new Color(
-                    Mathf.Min(1f, bodyColor.r * 1.35f),
-                    Mathf.Min(1f, bodyColor.g * 1.35f),
-                    Mathf.Min(1f, bodyColor.b * 1.35f), 0.9f), 128, 0.12f), 6);
-
-            _body = CreateChild("Body", Vector3.zero, 1f, bodySprite, 5);
-            _body.transform.localScale = bodyScale;
-            _bodyBase = bodyScale;
+                    Mathf.Min(1f, bodyColor.r * 1.4f),
+                    Mathf.Min(1f, bodyColor.g * 1.4f),
+                    Mathf.Min(1f, bodyColor.b * 1.4f), 0.92f), 128, 0.11f), 7);
 
             var nucleusColor = faction == Faction.Predator
                 ? new Color(0.95f, 0.25f, 0.35f, 0.95f)
                 : new Color(0.45f, 0.95f, 0.4f, 0.95f);
-
-            _nucleus = CreateChild("Nucleus", new Vector3(-radius * 0.1f, radius * 0.08f, 0f), radius * 0.4f,
-                ProceduralSprites.SoftEllipse($"nucleus-{style}", nucleusColor, 96, 1f, 1f, 0.18f, 0.55f), 8);
+            _nucleus = CreateSprite("Nucleus", new Vector3(-radius * 0.1f, radius * 0.08f, -0.02f), radius * 0.38f,
+                ProceduralSprites.SoftEllipse($"nucleus-{style}", nucleusColor, 96, 1f, 1f, 0.18f, 0.55f), 9);
             _nucleusBase = _nucleus.transform.localScale;
 
-            _organelle = CreateChild("Organelle", new Vector3(radius * 0.26f, -radius * 0.14f, 0f), radius * 0.17f,
-                ProceduralSprites.Circle("organelle-purple", new Color(0.75f, 0.4f, 1f, 0.9f), 48), 9);
+            _organelle = CreateSprite("Organelle", new Vector3(radius * 0.26f, -radius * 0.14f, -0.02f), radius * 0.16f,
+                ProceduralSprites.Circle("organelle-purple", new Color(0.75f, 0.4f, 1f, 0.9f), 48), 10);
 
-            CreateChild("Vesicle", new Vector3(radius * 0.02f, -radius * 0.3f, 0f), radius * 0.11f,
-                ProceduralSprites.Circle("vesicle-cyan", new Color(0.35f, 0.85f, 1f, 0.85f), 32), 9);
+            CreateSprite("Vesicle", new Vector3(radius * 0.02f, -radius * 0.3f, -0.02f), radius * 0.1f,
+                ProceduralSprites.Circle("vesicle-cyan", new Color(0.35f, 0.85f, 1f, 0.85f), 32), 10);
+
+            _partsRoot = new GameObject("Parts").transform;
+            _partsRoot.SetParent(transform, false);
 
             if (style == MicrobeStyle.Segmented)
                 BuildSegments(radius, bodyColor);
@@ -110,9 +97,58 @@ namespace MicroEvolution.Visuals
             BuildSpikes(radius, style == MicrobeStyle.SpikyOrb || faction == Faction.Predator);
             if (_spikesRoot != null)
                 _spikesRoot.gameObject.SetActive(style == MicrobeStyle.SpikyOrb || faction == Faction.Predator);
+        }
 
-            if (style == MicrobeStyle.RodBacteria && _rim != null)
-                _rim.transform.localScale = new Vector3(radius * 0.75f, radius * 1.4f, 1f);
+        void BuildMeshOrSpriteBody(float radius, Color bodyColor, MicrobeStyle style)
+        {
+            if (_softShader == null) _softShader = Shader.Find("MicroEvolution/SoftCell");
+            var useMesh = _softShader != null && style != MicrobeStyle.SpikyOrb;
+
+            if (!useMesh)
+            {
+                Sprite bodySprite;
+                Vector3 bodyScale;
+                if (style == MicrobeStyle.SpikyOrb)
+                {
+                    bodySprite = ProceduralSprites.SpikyOrb($"spiky-{_faction}", bodyColor, 128, 12);
+                    bodyScale = Vector3.one * radius * 1.15f;
+                }
+                else if (style == MicrobeStyle.RodBacteria)
+                {
+                    bodySprite = ProceduralSprites.Capsule($"rod-{_faction}", bodyColor, 128);
+                    bodyScale = new Vector3(radius * 0.7f, radius * 1.35f, 1f);
+                }
+                else
+                {
+                    bodySprite = ProceduralSprites.SoftEllipse($"body-{_faction}-{style}", bodyColor, 128, 0.9f, 1.05f, 0.15f, 0.5f);
+                    bodyScale = Vector3.one * radius;
+                }
+
+                _fallbackBody = CreateSprite("Body", Vector3.zero, 1f, bodySprite, 5);
+                _fallbackBody.transform.localScale = bodyScale;
+                _bodyBase = bodyScale;
+                return;
+            }
+
+            if (_sphereMesh == null) _sphereMesh = MeshFactory.UnitSphere(28, 18);
+            if (_capsuleMesh == null) _capsuleMesh = MeshFactory.Capsule(22, 14);
+
+            var bodyGo = new GameObject("MeshBody");
+            bodyGo.transform.SetParent(transform, false);
+            _meshFilter = bodyGo.AddComponent<MeshFilter>();
+            _meshBody = bodyGo.AddComponent<MeshRenderer>();
+            _meshFilter.sharedMesh = style == MicrobeStyle.RodBacteria ? _capsuleMesh : _sphereMesh;
+            _cellMat = new Material(_softShader);
+            _cellMat.SetColor("_Color", bodyColor);
+            _cellMat.SetColor("_RimColor", Color.Lerp(bodyColor, Color.white, 0.55f));
+            _meshBody.sharedMaterial = _cellMat;
+            _meshBody.sortingOrder = 5;
+
+            var scale = style == MicrobeStyle.RodBacteria
+                ? new Vector3(radius * 1.5f, radius * 2.1f, radius * 1.2f)
+                : Vector3.one * (radius * 2f);
+            bodyGo.transform.localScale = scale;
+            _bodyBase = scale;
         }
 
         void BuildSegments(float radius, Color color)
@@ -121,7 +157,7 @@ namespace MicroEvolution.Visuals
             _segmentsRoot.SetParent(transform, false);
             for (var i = 1; i <= 4; i++)
             {
-                var seg = CreateChild($"Seg{i}", new Vector3(0f, -radius * 0.55f * i, 0f), radius * (0.85f - i * 0.08f),
+                var seg = CreateSprite($"Seg{i}", new Vector3(0f, -radius * 0.55f * i, 0f), 1f,
                     ProceduralSprites.SoftEllipse($"seg-{i}", color * (1f - i * 0.06f), 96, 0.8f, 1f, 0.16f, 0.4f), 4);
                 seg.transform.localScale = new Vector3(radius * (0.75f - i * 0.06f), radius * (0.9f - i * 0.05f), 1f);
             }
@@ -130,13 +166,14 @@ namespace MicroEvolution.Visuals
         void BuildCilia(float radius)
         {
             _ciliaRoot = new GameObject("Cilia").transform;
-            _ciliaRoot.SetParent(transform, false);
+            _ciliaRoot.SetParent(_partsRoot != null ? _partsRoot : transform, false);
             for (var i = 0; i < 16; i++)
             {
                 var angle = (i / 16f) * Mathf.PI * 2f;
                 var dir = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
-                var cilia = CreateChild($"Cilium{i}", dir * radius * 0.84f, radius * 0.28f,
+                var cilia = CreateSprite($"Cilium{i}", dir * radius * 0.84f, radius * 0.28f,
                     ProceduralSprites.BloomDisc("cilia", new Color(0.75f, 0.95f, 1f, 0.55f), 24), 3);
+                cilia.transform.SetParent(_ciliaRoot, true);
                 cilia.transform.localScale = new Vector3(radius * 0.07f, radius * 0.48f, 1f);
                 cilia.transform.localRotation = Quaternion.Euler(0f, 0f, angle * Mathf.Rad2Deg);
             }
@@ -145,7 +182,7 @@ namespace MicroEvolution.Visuals
         void BuildFlagella(float radius)
         {
             _flagellaRoot = new GameObject("Flagella").transform;
-            _flagellaRoot.SetParent(transform, false);
+            _flagellaRoot.SetParent(_partsRoot != null ? _partsRoot : transform, false);
             for (var i = 0; i < 3; i++)
             {
                 var fang = new GameObject($"Flagellum{i}");
@@ -162,7 +199,7 @@ namespace MicroEvolution.Visuals
         void BuildSpikes(float radius, bool enabled)
         {
             _spikesRoot = new GameObject("Spikes").transform;
-            _spikesRoot.SetParent(transform, false);
+            _spikesRoot.SetParent(_partsRoot != null ? _partsRoot : transform, false);
             for (var i = 0; i < 10; i++)
             {
                 var angle = i * 36f;
@@ -171,21 +208,60 @@ namespace MicroEvolution.Visuals
                 spike.transform.localRotation = Quaternion.Euler(0f, 0f, angle);
                 var sr = spike.AddComponent<SpriteRenderer>();
                 sr.sprite = ProceduralSprites.Spike("spike", new Color(0.9f, 0.95f, 1f, 0.85f));
-                sr.sortingOrder = 7;
+                sr.sortingOrder = 8;
                 spike.transform.localScale = Vector3.one * (radius * 1.05f);
             }
 
             _spikesRoot.gameObject.SetActive(enabled);
         }
 
+        public void RefreshAttachedParts(GameState state)
+        {
+            if (state == null) return;
+            SetSpikesVisible(state.HasSpikes);
+            SetFlagellaVisible(state.HasFlagella || state.HasOscillator);
+            // Eyes: small bright dots
+            var eyes = transform.Find("Parts/Eyes");
+            if (state.HasEyes && eyes == null)
+            {
+                var e = CreateSprite("Eyes", new Vector3(_radius * 0.2f, _radius * 0.22f, -0.03f), _radius * 0.12f,
+                    ProceduralSprites.Circle("eye", new Color(1f, 1f, 0.7f, 0.95f), 32), 11);
+                e.transform.SetParent(_partsRoot != null ? _partsRoot : transform, true);
+                e.gameObject.name = "Eyes";
+            }
+            else if (!state.HasEyes && eyes != null) Destroy(eyes.gameObject);
+
+            // Jaws: front spikes
+            var jaws = transform.Find("Parts/Jaws");
+            if (state.HasJaws && jaws == null)
+            {
+                var j = new GameObject("Jaws");
+                j.transform.SetParent(_partsRoot != null ? _partsRoot : transform, false);
+                for (var i = 0; i < 3; i++)
+                {
+                    var t = CreateSprite($"Jaw{i}", new Vector3((i - 1) * _radius * 0.12f, _radius * 0.7f, 0f), _radius * 0.35f,
+                        ProceduralSprites.Spike("jaw", new Color(0.95f, 0.85f, 0.7f, 0.9f)), 8);
+                    t.transform.SetParent(j.transform, true);
+                    t.transform.localRotation = Quaternion.Euler(0f, 0f, -20f + i * 20f);
+                }
+            }
+            else if (!state.HasJaws && jaws != null) Destroy(jaws.gameObject);
+        }
+
         public void SetMembraneColor(Color color)
         {
             _membrane = color;
-            if (_body != null) _body.color = color;
-            if (_bloom != null) _bloom.color = new Color(color.r, color.g, color.b, _boosting ? 0.55f : 0.35f);
-            if (_bloom2 != null) _bloom2.color = new Color(color.r, color.g, color.b, 0.2f);
+            if (_fallbackBody != null) _fallbackBody.color = color;
+            if (_cellMat != null)
+            {
+                _cellMat.SetColor("_Color", color);
+                _cellMat.SetColor("_RimColor", Color.Lerp(color, Color.white, 0.55f));
+            }
+
+            if (_bloom != null) _bloom.color = new Color(color.r, color.g, color.b, _boosting ? 0.55f : 0.38f);
+            if (_bloom2 != null) _bloom2.color = new Color(color.r, color.g, color.b, 0.22f);
             if (_rim != null)
-                _rim.color = new Color(Mathf.Min(1f, color.r * 1.35f), Mathf.Min(1f, color.g * 1.35f), Mathf.Min(1f, color.b * 1.35f), 0.9f);
+                _rim.color = new Color(Mathf.Min(1f, color.r * 1.4f), Mathf.Min(1f, color.g * 1.4f), Mathf.Min(1f, color.b * 1.4f), 0.92f);
         }
 
         public void SetSpikesVisible(bool visible)
@@ -205,23 +281,27 @@ namespace MicroEvolution.Visuals
             if (_bloom != null)
             {
                 var c = _bloom.color;
-                c.a = boosting ? 0.6f : 0.35f;
+                c.a = boosting ? 0.65f : 0.38f;
                 _bloom.color = c;
-                _bloom.transform.localScale = _bloomBase * (boosting ? 1.3f : 1f);
+                _bloom.transform.localScale = _bloomBase * (boosting ? 1.35f : 1f);
             }
 
-            if (_bloom2 != null)
-                _bloom2.transform.localScale = Vector3.one * (_bodyBase.magnitude * (boosting ? 3.1f : 2.6f));
+            if (_cellMat != null)
+                _cellMat.SetFloat("_FresnelBoost", boosting ? 2.1f : 1.4f);
         }
 
         void Update()
         {
             _pulse += Time.deltaTime * 2.4f;
-            if (_body != null)
-                _body.transform.localScale = Vector3.Scale(_bodyBase, new Vector3(
-                    1f + Mathf.Sin(_pulse) * 0.04f,
-                    1f + Mathf.Sin(_pulse + 0.8f) * 0.03f,
-                    1f));
+            var breathe = new Vector3(
+                1f + Mathf.Sin(_pulse) * 0.04f,
+                1f + Mathf.Sin(_pulse + 0.8f) * 0.03f,
+                1f);
+
+            if (_meshBody != null)
+                _meshBody.transform.localScale = Vector3.Scale(_bodyBase, breathe);
+            if (_fallbackBody != null)
+                _fallbackBody.transform.localScale = Vector3.Scale(_bodyBase, breathe);
             if (_nucleus != null)
                 _nucleus.transform.localScale = _nucleusBase * (1f + Mathf.Sin(_pulse * 1.5f) * 0.1f);
             if (_ciliaRoot != null)
@@ -234,12 +314,12 @@ namespace MicroEvolution.Visuals
                 {
                     var t = _segmentsRoot.GetChild(i);
                     var wave = Mathf.Sin(_pulse * 2.5f + i * 0.7f) * 0.08f;
-                    t.localPosition = new Vector3(wave, t.localPosition.y, 0f);
+                    t.localPosition = new Vector3(wave, t.localPosition.y, t.localPosition.z);
                 }
             }
         }
 
-        SpriteRenderer CreateChild(string name, Vector3 localPos, float worldRadius, Sprite sprite, int order)
+        SpriteRenderer CreateSprite(string name, Vector3 localPos, float worldRadius, Sprite sprite, int order)
         {
             var go = new GameObject(name);
             go.transform.SetParent(transform, false);

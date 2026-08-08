@@ -2,28 +2,31 @@
 
 Scored against the provided cinematic mobile mockups (Micronus / Evolve Cell Stage style).
 
-**Overall: ~58%**
+**Overall: ~70%**
 
 | Pillar | Weight | Score | Notes |
 | --- | ---: | ---: | --- |
-| UI / UX layout | 25% | **82%** | DNA/Gen/Score, objectives, circular radar, joystick, vitals, EVO cluster, evolve + customize screens |
-| Creature readability & variety | 20% | **62%** | Soft gelatinous shading, bloom, spiky/rod/segmented silhouettes — still sprites, not 3D meshes |
-| Water / atmosphere | 20% | **55%** | God rays, depth layers, snow, vignette, hurt flash — no real DoF / volumetric light |
-| Material realism | 20% | **35%** | Fake translucency/gloss via textures; missing refraction, SSS, HDR bloom stack |
-| Gameplay systems vs concepts | 15% | **70%** | Eat/evolve/biomes/reproduce/generation present; no true cell editor parts drag-drop or multiplayer |
+| UI / UX layout | 25% | **84%** | DNA/Gen/Score, objectives, circular radar/joystick, EVO DNA-ring, evolve grid, customize with part chips |
+| Creature readability & variety | 20% | **74%** | Rim-lit mesh bodies + gelatinous sprites; spiky/rod/segmented; live part attach (flagella/spikes/eyes/jaws) |
+| Water / atmosphere | 20% | **72%** | Bloom + soft edge DoF post, biome grades (shoal/midwater/vent haze), god rays, snow |
+| Material realism | 20% | **52%** | Custom SoftCell fresnel shader; still not full refraction/SSS/HDRP glass |
+| Gameplay systems vs concepts | 15% | **72%** | Eat/evolve/biomes/reproduce/generation; part attach visuals; no drag-drop 3D editor yet |
 
-### How this pass moved the needle
+### Progress
 
-- Previous cinematic pass: ~**45%** overall  
-- This fidelity pass: ~**58%** overall (+13 pts)
+| Milestone | Overall |
+| --- | ---: |
+| First cinematic HUD pass | ~45% |
+| Gelatinous sprites + silhouettes | ~58% |
+| **This pass (mesh + bloom/DoF + biomes)** | **~70%** |
 
-### What would get us to ~80%+
+### Path to ~80–85%
 
-1. URP + Bloom / Depth of Field / Color Grading  
-2. Authored translucent 3D cell meshes (or high-quality mesh impostors)  
-3. Part-attachment cell editor (drag flagella/spikes onto body)  
-4. Hand-tuned biome art sets (freshwater / toxic / vent)  
+1. Authored 3D cell kits (or higher-res mesh LODs) with animated cilia bones  
+2. True volumetric god rays / particle lit foam  
+3. Drag-and-drop part sockets in customize  
+4. Hand-painted biome backdrops  
 
-### What would get us to ~95% (ship look)
+### Path to ~95%
 
-Full art production pass + animator polish + audio mix — beyond procedural prototype scope.
+Full art/animation/audio production — beyond procedural prototype scope.

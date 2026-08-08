@@ -42,6 +42,7 @@ namespace MicroEvolution.Core
             UnderwaterAtmosphere.Create(transform);
             var biome = gameObject.AddComponent<BiomeSystem>();
             biome.BuildVeil(transform);
+            gameObject.AddComponent<BiomeAtmosphere>();
 
             var hudGo = new GameObject("CinematicHUD");
             hudGo.transform.SetParent(transform, false);
@@ -93,6 +94,9 @@ namespace MicroEvolution.Core
                     cam.gameObject.AddComponent<CameraImpulse>();
                 if (cam.GetComponent<CameraEffects>() == null)
                     cam.gameObject.AddComponent<CameraEffects>();
+                if (cam.GetComponent<CinematicPostProcess>() == null)
+                    cam.gameObject.AddComponent<CinematicPostProcess>();
+                BiomeAtmosphere.Instance?.BindCamera(cam);
                 cam.orthographicSize = MobileSettings.IsMobileRuntime
                     ? GameConfig.CameraSizeMobile
                     : GameConfig.CameraSize;
