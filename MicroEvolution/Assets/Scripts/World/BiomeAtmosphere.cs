@@ -40,9 +40,10 @@ namespace MicroEvolution.World
             var biome = BiomeSystem.Instance.ActiveBiome;
             if (biome != _last)
             {
+                var first = (int)_last < 0;
                 _last = biome;
                 Apply(biome);
-                GameEvents.RaiseToast(BiomeSystem.BiomeName(biome));
+                if (!first) GameEvents.RaiseToast(BiomeSystem.BiomeName(biome));
             }
 
             if (_haze != null && GameState.Instance != null && GameState.Instance.PlayerTransform != null)
