@@ -13,8 +13,7 @@ namespace MicroEvolution.Core
     {
         Transform _worldRoot;
         PlayerController _player;
-        GameHUD _hud;
-        bool _runAlive;
+        CinematicHud _hud;
 
         void Awake()
         {
@@ -40,20 +39,17 @@ namespace MicroEvolution.Core
             gameObject.AddComponent<AudioDirector>();
             gameObject.AddComponent<ObjectPool>();
 
-            var hudGo = new GameObject("HUD");
-            hudGo.transform.SetParent(transform, false);
-            _hud = hudGo.AddComponent<GameHUD>();
-            var touch = hudGo.AddComponent<TouchControls>();
-            touch.Configure();
-            var tutorial = hudGo.AddComponent<TutorialDirector>();
-            _hud.Bind(null, touch, tutorial);
-
-            AmbientEnvironment.Create(transform);
+            UnderwaterAtmosphere.Create(transform);
             var biome = gameObject.AddComponent<BiomeSystem>();
             biome.BuildVeil(transform);
 
+            var hudGo = new GameObject("CinematicHUD");
+            hudGo.transform.SetParent(transform, false);
+            _hud = hudGo.AddComponent<CinematicHud>();
+            _hud.Build();
+
             GameFlow.Instance.ShowMainMenu();
-            GameEvents.RaiseToast("MicroEvolution — Cell Stage");
+            GameEvents.RaiseToast("Swim. Feed. Evolve.");
         }
 
         public void BeginRunFromMenu()
@@ -66,6 +62,7 @@ namespace MicroEvolution.Core
         public void ReturnToMenu()
         {
             TeardownRun();
+            Time.timeScale = 1f;
             GameFlow.Instance.ShowMainMenu();
         }
 
@@ -83,6 +80,9 @@ namespace MicroEvolution.Core
             spawnerGo.AddComponent<WorldSpawner>().BuildEcology();
 
             _player = CreatePlayer(Vector3.zero);
+            var look = _player.GetComponent<CellAppearance>();
+            look?.SetMembraneColor(GameState.Instance.MembraneColor);
+
             var cam = Camera.main;
             if (cam != null)
             {
@@ -94,12 +94,10 @@ namespace MicroEvolution.Core
                 cam.orthographicSize = MobileSettings.IsMobileRuntime
                     ? GameConfig.CameraSizeMobile
                     : GameConfig.CameraSize;
+                cam.backgroundColor = new Color(0.015f, 0.06f, 0.1f, 1f);
             }
 
-            var touch = _hud.GetComponent<TouchControls>();
-            var tutorial = _hud.GetComponent<TutorialDirector>();
-            _hud.Bind(_player, touch, tutorial);
-            _runAlive = true;
+            _hud.BindPlayer(_player);
             SaveSystem.SaveMeta(GameFlow.Instance, GameState.Instance);
         }
 
@@ -110,8 +108,7 @@ namespace MicroEvolution.Core
             var state = GameState.Instance;
             if (state != null) Destroy(state.gameObject);
             _player = null;
-            _runAlive = false;
-            _hud?.Bind(null, _hud.GetComponent<TouchControls>(), _hud.GetComponent<TutorialDirector>());
+            _hud?.BindPlayer(null);
         }
 
         PlayerController CreatePlayer(Vector3 pos)
@@ -131,16 +128,19 @@ namespace MicroEvolution.Core
             go.AddComponent<CellMotor>();
             go.AddComponent<LivingCell>();
             var appearance = go.AddComponent<CellAppearance>();
-            appearance.Build(Faction.Player, GameConfig.PlayerRadius, new Color(0.35f, 0.8f, 1f, 0.72f));
+            var color = GameState.Instance != null
+                ? GameState.Instance.MembraneColor
+                : new Color(0.35f, 0.8f, 1f, 0.72f);
+            appearance.Build(Faction.Player, GameConfig.PlayerRadius, color);
 
             var trail = go.AddComponent<TrailRenderer>();
-            trail.time = 0.45f;
-            trail.startWidth = 0.35f;
+            trail.time = 0.55f;
+            trail.startWidth = 0.4f;
             trail.endWidth = 0.02f;
             var shader = Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Color");
             if (shader != null) trail.material = new Material(shader);
-            trail.startColor = new Color(0.4f, 0.85f, 1f, 0.45f);
-            trail.endColor = new Color(0.4f, 0.85f, 1f, 0f);
+            trail.startColor = new Color(color.r, color.g, color.b, 0.5f);
+            trail.endColor = new Color(color.r, color.g, color.b, 0f);
             trail.sortingOrder = 1;
 
             var player = go.AddComponent<PlayerController>();
@@ -169,7 +169,7 @@ namespace MicroEvolution.Core
 
             cam.orthographic = true;
             cam.orthographicSize = GameConfig.CameraSize;
-            cam.backgroundColor = new Color(0.02f, 0.07f, 0.12f, 1f);
+            cam.backgroundColor = new Color(0.015f, 0.06f, 0.1f, 1f);
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.transform.position = new Vector3(0f, 0f, -10f);
             cam.depth = -1;

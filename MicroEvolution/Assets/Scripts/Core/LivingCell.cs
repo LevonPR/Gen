@@ -100,6 +100,7 @@ namespace MicroEvolution.Core
                 else if (Faction == Faction.Prey)
                 {
                     GameState.Instance.AddPopulation(1);
+                    GameState.Instance.RegisterBacteriaEat();
                     FloatingText.Spawn(transform.position, $"+{biomass:0}", new Color(1f, 0.9f, 0.4f));
                 }
             }

@@ -2,6 +2,10 @@
 
 Spore-inspired **Cell Stage** game for **Unity 2022.3 LTS**, built to ship as an **Android APK**.
 
+## Visual target
+
+Designed to match cinematic mobile Cell Stage concepts: bioluminescent microbes, DNA/evolution HUD, joystick + ability cluster, evolution shop, and cell color customize. See `Docs/DEVELOPMENT_PLAN.md` → Visual target.
+
 ## Quick start (Editor)
 
 1. Install Unity Hub + **Unity 2022.3.52f1** (Android Build Support + OpenJDK + SDK/NDK).

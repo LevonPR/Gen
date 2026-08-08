@@ -138,6 +138,8 @@ namespace MicroEvolution.Player
         void SyncEvolutionVisuals()
         {
             _appearance?.SetSpikesVisible(GameState.Instance.HasSpikes);
+            _appearance?.SetFlagellaVisible(GameState.Instance.HasFlagella || GameState.Instance.HasOscillator);
+            _appearance?.SetMembraneColor(GameState.Instance.MembraneColor);
         }
 
         void TryChemosynthesis()

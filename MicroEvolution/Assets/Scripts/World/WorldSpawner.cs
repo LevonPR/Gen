@@ -110,7 +110,9 @@ namespace MicroEvolution.World
                     speed = vent ? 4.8f : 4.2f;
                     biomass = GameConfig.PreyBiomassValue * (vent ? 1.3f : 1f);
                     evo = GameConfig.PreyKillEvoReward;
-                    color = vent ? new Color(1f, 0.7f, 0.35f, 0.8f) : new Color(0.55f, 0.85f, 1f, 0.78f);
+                    color = vent
+                        ? new Color(1f, 0.55f, 0.25f, 0.82f)
+                        : Color.Lerp(new Color(0.55f, 0.85f, 1f, 0.78f), new Color(1f, 0.75f, 0.35f, 0.8f), Random.value);
                     detect = 9f;
                     break;
                 case Faction.Predator:
@@ -120,7 +122,9 @@ namespace MicroEvolution.World
                     speed = vent ? 5.1f : 4.8f;
                     biomass = vent ? 90f : 70f;
                     evo = GameConfig.PredatorKillEvoReward + (vent ? 2 : 0);
-                    color = vent ? new Color(0.35f, 0.08f, 0.1f, 0.95f) : new Color(0.18f, 0.14f, 0.2f, 0.92f);
+                    color = vent
+                        ? new Color(0.85f, 0.12f, 0.18f, 0.92f)
+                        : new Color(0.55f, 0.15f, 0.65f, 0.9f);
                     detect = 12f;
                     break;
                 default:

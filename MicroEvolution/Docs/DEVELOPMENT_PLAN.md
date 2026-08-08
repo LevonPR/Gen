@@ -123,6 +123,19 @@ Already in repo:
 - No paid assets required; procedural art/audio preferred
 - Keep systems data-driven (`GameConfig`, part definitions)
 
+## Visual target (end-product examples)
+
+Match cinematic mobile concept art (Micronus / Evolve Cell Stage style):
+
+- Translucent cells with rim light, organelles, cilia/flagella
+- Dark aquatic atmosphere, god rays, marine snow, depth layers
+- DNA / Generation / Score header, region + objective card
+- Circular radar, virtual joystick, round action cluster, EVO button
+- Evolution grid shop + Customize Cell color swatches
+- Reproduction / generation victory flow
+
+Implemented via runtime Canvas HUD (`CinematicHud`) + `UnderwaterAtmosphere` + upgraded `CellAppearance`.
+
 ## Non-goals (post-APK)
 
 - Full Spore creature/tribal/civilization stages

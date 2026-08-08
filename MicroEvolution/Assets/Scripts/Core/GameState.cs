@@ -10,12 +10,20 @@ namespace MicroEvolution.Core
         public float AtpMax { get; private set; } = GameConfig.AtpMaxBase;
         public float Biomass { get; private set; }
         public int EvolutionPoints { get; private set; } = GameConfig.StartingEvolutionPoints;
+        /// <summary>UI alias matching concept art "DNA" currency.</summary>
+        public int DNA => EvolutionPoints;
         public int Population { get; private set; } = GameConfig.StartingPopulation;
         public float Health { get; private set; } = GameConfig.PlayerMaxHealth;
         public float MaxHealth { get; private set; } = GameConfig.PlayerMaxHealth;
         public int CurrentBiomeIndex { get; private set; }
         public int PredatorsKilled { get; private set; }
         public int FoodEaten { get; private set; }
+        public int BacteriaEaten { get; private set; }
+        public int Score { get; private set; }
+        public int Generation { get; private set; } = 1;
+        public Color MembraneColor { get; private set; } = new Color(0.35f, 0.8f, 1f, 0.72f);
+        public int FoodObjectiveTarget => 10;
+        public int BacteriaObjectiveTarget => 3;
 
         public bool HasOscillator { get; private set; }
         public bool HasSpikes { get; private set; }
@@ -45,6 +53,7 @@ namespace MicroEvolution.Core
 
             Instance = this;
             ApplyMetaBonuses();
+            Generation = Mathf.Max(1, SaveSystem.LoadMeta().totalRuns);
         }
 
         void ApplyMetaBonuses()
@@ -70,6 +79,9 @@ namespace MicroEvolution.Core
             CurrentBiomeIndex = 0;
             PredatorsKilled = 0;
             FoodEaten = 0;
+            BacteriaEaten = 0;
+            Score = 0;
+            Generation = Mathf.Max(1, SaveSystem.LoadMeta().totalRuns);
             HasOscillator = HasSpikes = HasMembrane = HasChemosynthesisUpgrade = false;
             HasFlagella = HasEyes = HasJaws = HasToxin = HasStorage = false;
             PopulationGoalMet = OscillatorGoalMet = BiomeGoalMet = Victory = PlayerDead = false;
@@ -113,10 +125,16 @@ namespace MicroEvolution.Core
             return true;
         }
 
-        public void AddBiomass(float amount)
+        public void AddBiomass(float amount, bool countsAsOrganicParticle = false)
         {
             Biomass += amount;
-            FoodEaten++;
+            if (countsAsOrganicParticle)
+            {
+                FoodEaten++;
+                GameEvents.RaiseObjectivesChanged();
+            }
+
+            Score += Mathf.RoundToInt(amount);
             var bonus = Mathf.FloorToInt(amount / 40f);
             if (bonus > 0) AddPopulation(bonus);
             GameEvents.RaiseStateChanged();
@@ -125,6 +143,31 @@ namespace MicroEvolution.Core
         public void AddEvolutionPoints(int amount)
         {
             EvolutionPoints += amount;
+            Score += amount * 10;
+            GameEvents.RaiseStateChanged();
+        }
+
+        public void RegisterBacteriaEat()
+        {
+            BacteriaEaten++;
+            Score += 35;
+            GameEvents.RaiseStateChanged();
+            GameEvents.RaiseObjectivesChanged();
+        }
+
+        public void SetMembraneColor(Color color)
+        {
+            MembraneColor = color;
+            GameEvents.RaiseStateChanged();
+        }
+
+        public void AdvanceGeneration()
+        {
+            Generation++;
+            Heal(MaxHealth);
+            AddAtp(AtpMax * 0.5f);
+            AddEvolutionPoints(5);
+            GameEvents.RaiseToast($"Reproduction successful — Generation {Generation}");
             GameEvents.RaiseStateChanged();
         }
 

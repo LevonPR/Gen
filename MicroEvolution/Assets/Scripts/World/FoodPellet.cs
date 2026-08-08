@@ -79,7 +79,7 @@ namespace MicroEvolution.World
                 if (BiomeSystem.Instance != null && BiomeSystem.Instance.ActiveBiome == BiomeId.ThermalVent)
                     value *= 1.35f;
 
-                GameState.Instance.AddBiomass(value);
+                GameState.Instance.AddBiomass(value, countsAsOrganicParticle: true);
                 GameState.Instance.AddAtp(8f);
                 if (Random.value < 0.28f)
                     GameState.Instance.AddEvolutionPoints(GameConfig.FoodEvoReward);
