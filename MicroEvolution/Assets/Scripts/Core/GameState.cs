@@ -169,7 +169,7 @@ namespace MicroEvolution.Core
             AddAtp(AtpMax * 0.5f);
             AddEvolutionPoints(5);
             if (PlayerTransform != null)
-                Visuals.MitosisFx.Play(PlayerTransform.position, MembraneColor);
+                MitosisFx.Play(PlayerTransform.position, MembraneColor);
             GameEvents.RaiseToast($"Reproduction successful — Generation {Generation}");
             GameEvents.RaiseStateChanged();
         }

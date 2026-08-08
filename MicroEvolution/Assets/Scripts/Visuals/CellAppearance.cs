@@ -34,6 +34,7 @@ namespace MicroEvolution.Visuals
 
         static Mesh _sphereMesh;
         static Mesh _capsuleMesh;
+        static Mesh _spikyMesh;
         static Shader _softShader;
 
         public Color MembraneColor => _membrane;
@@ -102,7 +103,7 @@ namespace MicroEvolution.Visuals
         void BuildMeshOrSpriteBody(float radius, Color bodyColor, MicrobeStyle style)
         {
             if (_softShader == null) _softShader = Shader.Find("MicroEvolution/SoftCell");
-            var useMesh = _softShader != null && style != MicrobeStyle.SpikyOrb;
+            var useMesh = _softShader != null;
 
             if (!useMesh)
             {
@@ -130,23 +131,28 @@ namespace MicroEvolution.Visuals
                 return;
             }
 
-            if (_sphereMesh == null) _sphereMesh = MeshFactory.UnitSphere(28, 18);
-            if (_capsuleMesh == null) _capsuleMesh = MeshFactory.Capsule(22, 14);
+            if (_sphereMesh == null) _sphereMesh = MeshFactory.UnitSphere(36, 22, 0.05f);
+            if (_capsuleMesh == null) _capsuleMesh = MeshFactory.Capsule(26, 16);
+            var spiky = MeshFactory.SpikySphere(30, 18, 11);
 
             var bodyGo = new GameObject("MeshBody");
             bodyGo.transform.SetParent(transform, false);
             _meshFilter = bodyGo.AddComponent<MeshFilter>();
             _meshBody = bodyGo.AddComponent<MeshRenderer>();
-            _meshFilter.sharedMesh = style == MicrobeStyle.RodBacteria ? _capsuleMesh : _sphereMesh;
+            _meshFilter.sharedMesh = style == MicrobeStyle.RodBacteria ? _capsuleMesh
+                : style == MicrobeStyle.SpikyOrb ? spiky
+                : _sphereMesh;
             _cellMat = new Material(_softShader);
             _cellMat.SetColor("_Color", bodyColor);
             _cellMat.SetColor("_RimColor", Color.Lerp(bodyColor, Color.white, 0.55f));
+            _cellMat.SetColor("_InnerColor", Color.Lerp(bodyColor, new Color(0.45f, 1f, 0.55f), 0.45f));
+            _cellMat.SetFloat("_Iridescence", style == MicrobeStyle.Eukaryote || _faction == Faction.Player ? 0.4f : 0.2f);
             _meshBody.sharedMaterial = _cellMat;
             _meshBody.sortingOrder = 5;
 
             var scale = style == MicrobeStyle.RodBacteria
                 ? new Vector3(radius * 1.5f, radius * 2.1f, radius * 1.2f)
-                : Vector3.one * (radius * 2f);
+                : Vector3.one * (radius * 2.05f);
             bodyGo.transform.localScale = scale;
             _bodyBase = scale;
         }

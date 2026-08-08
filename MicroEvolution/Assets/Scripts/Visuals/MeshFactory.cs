@@ -4,7 +4,7 @@ namespace MicroEvolution.Visuals
 {
     public static class MeshFactory
     {
-        public static Mesh UnitSphere(int lon = 24, int lat = 16)
+        public static Mesh UnitSphere(int lon = 32, int lat = 20, float displace = 0.04f)
         {
             var mesh = new Mesh { name = "CellSphere" };
             var verts = new Vector3[(lon + 1) * (lat + 1)];
@@ -24,8 +24,10 @@ namespace MicroEvolution.Visuals
                     var u = x / (float)lon;
                     var yaw = u * Mathf.PI * 2f;
                     var p = new Vector3(Mathf.Cos(yaw) * cr, cy, Mathf.Sin(yaw) * cr);
-                    // Flatten toward camera plane for 2.5D readability
-                    p.z *= 0.35f;
+                    // Organic displacement
+                    var n = Mathf.PerlinNoise(u * 3.5f + 10f, v * 3.5f + 20f) * 2f - 1f;
+                    p += p.normalized * (n * displace);
+                    p.z *= 0.38f; // flatten for 2.5D
                     verts[vi] = p * 0.5f;
                     norms[vi] = p.normalized;
                     uvs[vi] = new Vector2(u, v);
@@ -51,24 +53,44 @@ namespace MicroEvolution.Visuals
             mesh.normals = norms;
             mesh.uv = uvs;
             mesh.triangles = tris;
+            mesh.RecalculateNormals();
             mesh.RecalculateBounds();
             return mesh;
         }
 
-        public static Mesh Capsule(int lon = 18, int lat = 12)
+        public static Mesh Capsule(int lon = 24, int lat = 16)
         {
-            var mesh = UnitSphere(lon, lat);
+            var mesh = UnitSphere(lon, lat, 0.03f);
             var v = mesh.vertices;
             for (var i = 0; i < v.Length; i++)
             {
-                v[i].x *= 0.62f;
-                v[i].y *= 1.25f;
+                v[i].x *= 0.58f;
+                v[i].y *= 1.3f;
             }
 
             mesh.vertices = v;
             mesh.RecalculateNormals();
             mesh.RecalculateBounds();
             mesh.name = "CellCapsule";
+            return mesh;
+        }
+
+        public static Mesh SpikySphere(int lon = 28, int lat = 16, int spikes = 10)
+        {
+            var mesh = UnitSphere(lon, lat, 0.02f);
+            var v = mesh.vertices;
+            for (var i = 0; i < v.Length; i++)
+            {
+                var p = v[i];
+                var ang = Mathf.Atan2(p.y, p.x);
+                var spike = 1f + 0.22f * Mathf.Pow(Mathf.Abs(Mathf.Sin(ang * spikes * 0.5f)), 1.5f);
+                v[i] = p * spike;
+            }
+
+            mesh.vertices = v;
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            mesh.name = "SpikySphere";
             return mesh;
         }
     }

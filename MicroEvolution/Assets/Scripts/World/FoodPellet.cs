@@ -104,6 +104,9 @@ namespace MicroEvolution.World
                 GameEvents.RaiseAteFood();
                 VfxBurst.Spawn(transform.position, new Color(0.5f, 1f, 0.5f, 0.85f), 0.7f);
                 FloatingText.Spawn(transform.position, $"+{value:0}", new Color(0.6f, 1f, 0.6f));
+                if (GameState.Instance.PlayerTransform != null)
+                    AbsorbTrail.Burst(transform.position, GameState.Instance.PlayerTransform.position,
+                        new Color(0.5f, 1f, 0.65f, 0.9f));
             }
 
             if (ObjectPool.Instance != null)

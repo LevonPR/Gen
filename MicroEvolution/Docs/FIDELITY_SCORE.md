@@ -2,15 +2,15 @@
 
 Scored against the provided cinematic mobile mockups (Micronus / Evolve Cell Stage style).
 
-**Overall: ~78%**
+**Overall: ~84%**
 
 | Pillar | Weight | Score | Notes |
 | --- | ---: | ---: | --- |
-| UI / UX layout | 25% | **86%** | Full mockup chrome + socket customize ring for part attach |
-| Creature readability & variety | 20% | **80%** | Mesh SoftCell + bone-chain cilia/flagella + live sockets |
-| Water / atmosphere | 20% | **80%** | Volumetric god-ray quads, foam, biome backdrops, vent heat distort |
-| Material realism | 20% | **62%** | Fresnel mesh + bloom/DoF/distort; still short of true refraction/SSS |
-| Gameplay systems vs concepts | 15% | **78%** | Mitosis VFX, socket evolve, biomes, generation loop |
+| UI / UX layout | 25% | **87%** | Mockup chrome + socket customize; polish ceiling without custom fonts/icons |
+| Creature readability & variety | 20% | **86%** | Displaced organic meshes, iridescent SoftCell, bone-chain appendages, spiky mesh predators |
+| Water / atmosphere | 20% | **86%** | Volumetric rays, caustics, foam, painted biome plates, vent distort, biolum halo |
+| Material realism | 20% | **72%** | Fresnel + iridescence + vertex wobble; still not photographed refraction/SSS |
+| Gameplay systems vs concepts | 15% | **80%** | Absorb trails, mitosis, sockets, biomes, generation |
 
 ### Progress
 
@@ -19,11 +19,9 @@ Scored against the provided cinematic mobile mockups (Micronus / Evolve Cell Sta
 | First cinematic HUD pass | ~45% |
 | Gelatinous sprites + silhouettes | ~58% |
 | Mesh + bloom/DoF + biomes | ~70% |
-| **This pass (volumetric + chains + sockets)** | **~78%** |
+| Volumetric + chains + sockets | ~78% |
+| **This pass (iridescence + caustics + painted plates)** | **~84%** |
 
-### Remaining gap to ~90%+
+### Remaining gap to ~92–95%
 
-- Authored 3D cell asset kit (sculpted eukaryotes, not procedural meshes)
-- Artist-painted biome plates
-- Full drag-drop part editor with snap sockets
-- Audio/animation polish pass
+True production art: sculpted cell kits, hand-painted biome plates, animator-authored cilia, polished SFX/music, and final lighting/VFX pass in URP/HDRP with real DoF bokeh.

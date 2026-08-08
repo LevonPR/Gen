@@ -42,6 +42,7 @@ namespace MicroEvolution.Core
             UnderwaterAtmosphere.Create(transform);
             VolumetricRays.Create(transform);
             BiomeBackdrops.Create(transform);
+            CausticsOverlay.Create(transform);
             var biome = gameObject.AddComponent<BiomeSystem>();
             biome.BuildVeil(transform);
             gameObject.AddComponent<BiomeAtmosphere>();
@@ -153,6 +154,7 @@ namespace MicroEvolution.Core
 
             var player = go.AddComponent<PlayerController>();
             player.Init(pos);
+            BiolumLight.Attach(go.transform, color);
             return player;
         }
 

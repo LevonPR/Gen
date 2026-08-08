@@ -100,10 +100,11 @@ namespace MicroEvolution.Visuals
 
             for (var i = 0; i < _layers.Length; i++)
             {
-                _layers[i].sprite = ProceduralSprites.SoftEllipse(
-                    $"backdrop-{biome}-{i}", colors[i], 128,
-                    1f + i * 0.1f, 0.8f + i * 0.05f, 0.25f, 0.15f);
+                var accent = Color.Lerp(colors[i], Color.white, 0.35f);
+                _layers[i].sprite = PaintedTextures.BiomePlate(
+                    $"paint-{biome}-{i}", colors[i], colors[(i + 1) % colors.Length], accent, 256);
                 _layers[i].color = Color.white;
+                _layers[i].transform.localScale = Vector3.one * (GameConfig.WorldRadius * (1.4f + i * 0.28f));
             }
         }
     }
