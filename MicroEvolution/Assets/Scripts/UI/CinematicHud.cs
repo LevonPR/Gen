@@ -268,8 +268,29 @@ namespace MicroEvolution.UI
             var img = btn.GetComponent<Image>();
             img.sprite = Visuals.ProceduralSprites.Circle($"btn-{name}", Color.white, 64);
             img.color = new Color(0.15f, 0.4f, 0.5f, 0.8f);
-            var text = UiTheme.MakeText(btn.transform, label, 24, Color.white, FontStyle.Bold, TextAnchor.MiddleCenter);
-            UiTheme.Stretch(text);
+
+            Sprite artIcon = null;
+            if (name == "Boost") artIcon = Visuals.ArtSpriteLibrary.GetUi("icon_boost");
+            else if (name == "Chem") artIcon = Visuals.ArtSpriteLibrary.GetUi("icon_chem");
+            else if (name == "Evolve") artIcon = Visuals.ArtSpriteLibrary.GetUi("icon_evo");
+
+            if (artIcon != null)
+            {
+                var icon = UiTheme.MakePanel(btn.transform, "ArtIcon", Color.white, true);
+                icon.sprite = artIcon;
+                icon.preserveAspect = true;
+                icon.raycastTarget = false;
+                UiTheme.SetAnchored(icon.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                    Vector2.zero, new Vector2(size * 0.72f, size * 0.72f));
+                var text = UiTheme.MakeText(btn.transform, label, 14, Color.white, FontStyle.Bold, TextAnchor.LowerCenter);
+                UiTheme.SetAnchored(text.rectTransform, new Vector2(0, 0), new Vector2(1, 0.35f), new Vector2(0.5f, 0), Vector2.zero, Vector2.zero);
+            }
+            else
+            {
+                var text = UiTheme.MakeText(btn.transform, label, 24, Color.white, FontStyle.Bold, TextAnchor.MiddleCenter);
+                UiTheme.Stretch(text);
+            }
+
             if (!hold) btn.onClick.AddListener(action);
             return btn;
         }

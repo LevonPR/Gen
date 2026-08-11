@@ -38,3 +38,7 @@ sysinfo.txt
 *.app
 *.exe
 *.unitypackage
+
+# Runtime copies are generated from Art/; do not commit large duplicates
+Assets/StreamingAssets/Models/*.glb
+Assets/StreamingAssets/Sprites/

@@ -20,10 +20,10 @@ Honest gap list vs a shippable cinematic Cell Stage (mockups + Spore-like feel).
 
 | Item | Status | Why it matters |
 | --- | --- | --- |
-| Authored 3D cell kits (FBX/glTF) | Missing | Still procedural spheres/capsules + displacement; mockups need sculpted bodies |
+| Authored 3D cell kits (FBX/glTF) | **Partial** | Meshy GLBs in `Assets/Art/Models/Cells` + `StreamingAssets/Models` via `ArtModelLibrary` (glTFast). First spawn may still use procedural until warmup finishes. |
 | Hand-painted / AI biome plates as textures | Partial | Runtime noise-painted plates only — not final art assets on disk |
 | Custom UI fonts | Missing | Default Unity fonts; mockups use distinctive display type |
-| Custom HUD icons / radar glyphs | Missing | Procedural shapes; need DNA, gen, ability, socket icons |
+| Custom HUD icons / radar glyphs | **Partial** | Meshy icons for boost/chem/evo/dna/radar under `Art/Sprites/UI`; wired on action buttons when present |
 | Animator-authored cilia / flagella | Partial | Bone-chain procedural sway only |
 | Photographed / high-end SSS & refraction | Missing | SoftCell fresnel/iridescence, not real subsurface or water IOR |
 | URP/HDRP final lighting pass | Missing | Built-in / custom post; no production DoF bokeh / volume stack |
@@ -58,8 +58,8 @@ Honest gap list vs a shippable cinematic Cell Stage (mockups + Spore-like feel).
 | Addressables / asset bundles | Missing | Everything loaded with scene bootstrap |
 | Input System package polish | Partial | Custom `GameInput` + touch; not full new Input System UX |
 | Performance profiling on mid devices | Not done | Mobile caps exist; need real device FPS pass |
-| Higgsfield-generated asset pipeline | Blocked on OAuth | MCP connected; desktop OAuth required before agent can generate into `Assets/Art/` |
-| `Assets/Art/` authored folder | Empty / unused | Import target for AI or artist meshes, textures, audio |
+| Higgsfield MCP | Optional | Still needs desktop OAuth; Meshy REST used instead for this art pack |
+| `Assets/Art/` authored folder | **In use** | Meshy GLBs + UI sprites committed; sync to StreamingAssets for builds |
 
 ---
 

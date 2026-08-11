@@ -1,30 +1,27 @@
-# Art drop folder
+# Art assets (Meshy)
 
-Put authored assets here. Chat cannot attach `.glb` / `.gltf` / `.zip` — use one of the methods below.
+## Models (`Models/Cells/*.glb`)
 
-## Models (glTF)
-
-| Path | Use for |
+| File | Role |
 | --- | --- |
-| `Models/Cells/` | Player, prey, predator, ally cell meshes (`.glb` preferred) |
-| `Models/Biomes/` | Optional props / rock / vent pieces |
+| `player_core.glb` | Player eukaryote |
+| `prey_rod.glb` | Prey rod bacteria |
+| `predator_spiky.glb` | Spiky predator |
+| `predator_worm.glb` | Segmented predator |
+| `ally_probe.glb` | Ally |
+| `food_pellet.glb` | Nutrient orb |
 
-**Preferred format:** single-file **`.glb`** (embeds textures).  
-If you use `.gltf` + `.bin` + textures, keep the whole set in one subfolder.
+Runtime copies live in `StreamingAssets/Models/` (synced by **MicroEvolution → Sync Art GLBs to StreamingAssets**).
 
-### Suggested names
+Requires package `com.unity.cloud.gltfast`. Loader: `ArtModelLibrary`.
 
-```
-Models/Cells/player_core.glb
-Models/Cells/prey_soft.glb
-Models/Cells/predator_spiky.glb
-Models/Cells/ally_rod.glb
-```
+## Sprites
 
-## How to get files into this repo
+- `Sprites/UI/` — `icon_dna`, `icon_boost`, `icon_chem`, `icon_evo`, `icon_radar`
+- `Sprites/Cells/` — thumbs + `sprite_player_ref`
 
-1. **GitHub web UI** — open this branch → upload into `MicroEvolution/Assets/Art/Models/Cells/` → commit.
-2. **Local clone** — copy files into the folder above → `git add` → `git push` → tell the agent.
-3. **Public/direct URL** — paste a download link to a `.glb` (not a Drive “view” page) in chat.
+Loader: `ArtSpriteLibrary` (HUD buttons use boost/chem/evo icons when present).
 
-After files land on the branch, ask the agent to wire them into `CellAppearance` / loaders.
+## Regenerating with Meshy
+
+Use Meshy REST API or MCP (`MESHY_API_KEY`). Do **not** commit API keys.

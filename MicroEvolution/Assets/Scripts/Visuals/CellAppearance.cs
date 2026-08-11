@@ -11,6 +11,7 @@ namespace MicroEvolution.Visuals
         MeshRenderer _meshBody;
         MeshFilter _meshFilter;
         Material _cellMat;
+        Transform _artBody;
         SpriteRenderer _rim;
         SpriteRenderer _bloom;
         SpriteRenderer _bloom2;
@@ -102,6 +103,18 @@ namespace MicroEvolution.Visuals
 
         void BuildMeshOrSpriteBody(float radius, Color bodyColor, MicrobeStyle style)
         {
+            // Prefer authored Meshy GLB when the library has warmed it.
+            if (ArtModelLibrary.TryAttach(transform, style, radius, out _artBody))
+            {
+                _bodyBase = _artBody.localScale;
+                return;
+            }
+
+            // Kick async load so later spawns / rebuilds can use art.
+            var artFile = ArtModelLibrary.FileForStyle(style);
+            if (!string.IsNullOrEmpty(artFile))
+                ArtModelLibrary.WarmupAsync(artFile);
+
             if (_softShader == null) _softShader = Shader.Find("MicroEvolution/SoftCell");
             var useMesh = _softShader != null;
 
@@ -316,6 +329,8 @@ namespace MicroEvolution.Visuals
                 1f + Mathf.Sin(_pulse + 0.8f) * 0.03f,
                 1f);
 
+            if (_artBody != null)
+                _artBody.localScale = Vector3.Scale(_bodyBase, breathe);
             if (_meshBody != null)
                 _meshBody.transform.localScale = Vector3.Scale(_bodyBase, breathe);
             if (_fallbackBody != null)

@@ -79,6 +79,9 @@ namespace MicroEvolution.Core
             _worldRoot = new GameObject("RunWorld").transform;
             _worldRoot.SetParent(transform, false);
 
+            ArtModelLibrary.WarmupAsync(
+                "player_core", "prey_rod", "predator_spiky", "predator_worm", "ally_probe", "food_pellet");
+
             var spawnerGo = new GameObject("WorldSpawner");
             spawnerGo.transform.SetParent(_worldRoot, false);
             spawnerGo.AddComponent<WorldSpawner>().BuildEcology();
