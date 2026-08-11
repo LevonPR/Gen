@@ -36,6 +36,10 @@ Designed to match cinematic mobile Cell Stage concepts: bioluminescent microbes,
 
 See [`Docs/WHAT_IS_MISSING.md`](Docs/WHAT_IS_MISSING.md) — APK/store blockers, art gaps, gameplay/content holes, and suggested next slices. Visual score: [`Docs/FIDELITY_SCORE.md`](Docs/FIDELITY_SCORE.md).
 
+## Connect Cursor ↔ Unity
+
+See [`Docs/CONNECT_UNITY.md`](Docs/CONNECT_UNITY.md) — open the same `MicroEvolution/` folder in Unity Hub + Cursor Desktop; Play Mode only runs in Unity.
+
 ## Features by phase
 
 See [`Docs/DEVELOPMENT_PLAN.md`](Docs/DEVELOPMENT_PLAN.md).

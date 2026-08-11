@@ -10,6 +10,8 @@ Phased plan: [`MicroEvolution/Docs/DEVELOPMENT_PLAN.md`](MicroEvolution/Docs/DEV
 
 **What’s missing:** [`MicroEvolution/Docs/WHAT_IS_MISSING.md`](MicroEvolution/Docs/WHAT_IS_MISSING.md)
 
+**Unity + Cursor setup:** [`MicroEvolution/Docs/CONNECT_UNITY.md`](MicroEvolution/Docs/CONNECT_UNITY.md)
+
 ### Android APK
 
 With Unity + Android Build Support installed:
