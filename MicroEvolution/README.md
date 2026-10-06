@@ -1,5 +1,8 @@
 # MicroEvolution
 
+> **Portfolio status:** P2 — **70% release-ready** toward a reproducible Android Cell Stage v1.  
+> Visual-fidelity scores in the docs measure appearance, not overall release completion. A real APK/device pass, automated tests, performance validation, polish and packaging remain. See [../PROJECT_STATUS.md](../PROJECT_STATUS.md).
+
 Spore-inspired **Cell Stage** game for **Unity 2022.3 LTS**, built to ship as an **Android APK**.
 
 ## Visual target
